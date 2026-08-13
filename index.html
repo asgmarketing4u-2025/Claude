@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NTM Deal Center — Real Estate Command Center</title>
+<meta name="description" content="NTM Deal Center — run your whole real estate investing pipeline from one blueprint-style command center. Powered by ASG Marketing.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A1A2F'/%3E%3Cpath d='M20 75 L20 30 L50 15 L80 30 L80 75 Z' fill='none' stroke='%23FF6B2C' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark">
+
+<div class="tick-frame" aria-hidden="true"></div>
+
+<div id="welcomeStripRoot"></div>
+
+<header id="titleBlock" class="title-block">
+  <div class="title-block__left">
+    <div class="title-block__brand">NTM DEAL CENTER</div>
+    <div class="title-block__project">REAL ESTATE COMMAND CENTER <span class="handwritten">by ASG Marketing</span></div>
+  </div>
+  <div class="title-block__mid">
+    <div class="title-block__field"><span class="title-block__k">DATE</span><span id="tbDateValue">—</span></div>
+    <div class="title-block__field"><span class="title-block__k">REV</span><span id="tbRevValue">000</span></div>
+    <div class="title-block__field"><span class="title-block__k">SCALE</span><span>1:REALITY</span></div>
+  </div>
+  <div class="title-block__right">
+    <button type="button" id="needsYouBadge" class="badge-flag" data-action="jumpToUrgent" hidden>⚑ 0</button>
+    <button type="button" class="btn btn--ghost btn--xs" data-action="openFinder">⌕ FIND <kbd>Ctrl K</kbd></button>
+    <button type="button" id="maskToggleBtn" class="pill-toggle" data-action="toggleMasked">🔒 MASKED</button>
+    <button type="button" id="themeToggleBtn" class="pill-toggle" data-action="toggleTheme">🌙 BLUEPRINT NIGHT</button>
+  </div>
+</header>
+
+<div id="heroRoot"></div>
+
+<nav id="sheetTabsRoot" class="sheet-tabs"></nav>
+
+<div class="subtabs-wrap" id="subTabsWrap">
+  <div id="subTabsRoot" class="subtabs"></div>
+</div>
+
+<main id="panelRoot" class="panel-root"></main>
+
+<footer class="footer-block">
+  <div class="footer-block__field"><span class="footer-block__k">DRAWN BY</span><span>ASG Marketing</span></div>
+  <div class="footer-block__field"><span class="footer-block__k">CHECKED</span><span>—</span></div>
+  <div class="footer-block__field"><span class="footer-block__k">SCALE</span><span>1:REALITY</span></div>
+  <div class="footer-block__field"><span class="footer-block__k">SHEET</span><span id="footerSheetValue">A-01</span></div>
+  <div class="footer-block__field footer-block__brand">NTM DEAL CENTER</div>
+</footer>
+
+<div id="modalRoot" class="modal-root"></div>
+<div id="finderRoot" class="modal-root"></div>
+<div id="toastStack" class="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/state.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/render.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/finder.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "ntm-deal-center",
+  "version": "1.0.0",
+  "description": "NTM Deal Center — a cyanotype blueprint real estate command center. Powered by ASG Marketing.",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asgmarketing4u-2025/Claude.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/asgmarketing4u-2025/Claude/issues"
+  },
+  "homepage": "https://github.com/asgmarketing4u-2025/Claude#readme",
+  "devDependencies": {
+    "puppeteer": "^25.6.0"
+  }
+}
