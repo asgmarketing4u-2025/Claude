@@ -29,7 +29,53 @@ const STRATEGIES = [
   { key: 'brrrr',     label: 'BRRRR' },
 ];
 
-const HOUSE_IMAGES = Array.from({ length: 15 }, (_, i) => `images/house-${String(i + 1).padStart(2, '0')}.svg`);
+// Parametric "listing photo" house illustrations, generated client-side as inline
+// SVG data URIs (no separate image files to host) — flat, blueprint-adjacent
+// architectural style, varied enough that no two cards look alike.
+const HOUSE_STYLES = [
+  { name: 'rowhouse', siding: '#8B5A3C', roof: '#3B2F2F', door: '#C1440E', trim: '#F2E9DC', windows: 6 },
+  { name: 'brick rambler', siding: '#9C4B3A', roof: '#5C4033', door: '#2E5339', trim: '#E8DFC8', windows: 3 },
+  { name: 'cape cod', siding: '#D8CBB5', roof: '#4A4A4A', door: '#1B4B6B', trim: '#FFFFFF', windows: 4 },
+  { name: 'colonial', siding: '#E7E2D8', roof: '#3E3E3E', door: '#8C1C1C', trim: '#FFFFFF', windows: 6 },
+  { name: 'bungalow', siding: '#6E7F63', roof: '#3B2F2F', door: '#C1440E', trim: '#F2E9DC', windows: 3 },
+  { name: 'formstone rowhouse', siding: '#B8ADA1', roof: '#2F2F2F', door: '#1B4B6B', trim: '#EDE6D8', windows: 6 },
+  { name: 'split level', siding: '#C9B79C', roof: '#4A4A4A', door: '#2E5339', trim: '#FFFFFF', windows: 5 },
+  { name: 'brick townhome', siding: '#A15C43', roof: '#2F2F2F', door: '#F2E9DC', trim: '#F2E9DC', windows: 6 },
+  { name: 'ranch', siding: '#DCD3C0', roof: '#5C4033', door: '#8C1C1C', trim: '#FFFFFF', windows: 4 },
+  { name: 'victorian', siding: '#7A6C5D', roof: '#2F2F2F', door: '#C1440E', trim: '#E8DFC8', windows: 5 },
+  { name: 'blue rowhouse', siding: '#3F5F72', roof: '#20303A', door: '#F2E9DC', trim: '#DCE7EA', windows: 6 },
+  { name: 'craftsman', siding: '#5B4636', roof: '#2F2F2F', door: '#2E5339', trim: '#E8DFC8', windows: 4 },
+  { name: 'duplex', siding: '#8A7B6C', roof: '#3B2F2F', door: '#1B4B6B', trim: '#F2E9DC', windows: 8 },
+  { name: 'cottage', siding: '#C7B299', roof: '#4A4A4A', door: '#8C1C1C', trim: '#FFFFFF', windows: 3 },
+  { name: 'green rowhouse', siding: '#556B4F', roof: '#2F2F2F', door: '#C1440E', trim: '#E8DFC8', windows: 6 },
+];
+
+function houseSVGMarkup(s, i) {
+  const w = 640, h = 480, groundY = 346, bodyLeft = 141, bodyRight = 499, bodyTop = 90, roofH = 60, bodyH = groundY - bodyTop;
+  const cols = Math.min(s.windows, 4);
+  const rows = Math.ceil(s.windows / cols);
+  let windowsMarkup = '';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      if (idx >= s.windows) continue;
+      const wx = bodyLeft + 30 + c * ((bodyRight - bodyLeft - 60) / (cols - 1 || 1));
+      const wy = bodyTop + 30 + r * 70;
+      windowsMarkup += `<rect x="${wx - 16}" y="${wy}" width="32" height="40" rx="2" fill="${s.trim}" stroke="#20303A" stroke-width="2"/><line x1="${wx}" y1="${wy}" x2="${wx}" y2="${wy + 40}" stroke="#20303A" stroke-width="1.5"/><line x1="${wx - 16}" y1="${wy + 20}" x2="${wx + 16}" y2="${wy + 20}" stroke="#20303A" stroke-width="1.5"/>`;
+    }
+  }
+  const doorX = (bodyLeft + bodyRight) / 2;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="#BFD9E8"/><rect x="0" y="${groundY}" width="${w}" height="${h - groundY}" fill="#A9B79C"/><rect x="0" y="${groundY - 4}" width="${w}" height="6" fill="#8A9A7D"/><rect x="${bodyLeft}" y="${bodyTop}" width="${bodyRight - bodyLeft}" height="${bodyH}" fill="${s.siding}"/><polygon points="${bodyLeft - 20},${bodyTop} ${(bodyLeft + bodyRight) / 2},${bodyTop - roofH} ${bodyRight + 20},${bodyTop}" fill="${s.roof}"/><rect x="${bodyLeft - 24}" y="${bodyTop - 4}" width="${bodyRight - bodyLeft + 48}" height="10" fill="${s.roof}"/>${windowsMarkup}<rect x="${doorX - 24}" y="${groundY - 90}" width="48" height="90" rx="2" fill="${s.door}" stroke="#20303A" stroke-width="2"/><circle cx="${doorX + 16}" cy="${groundY - 45}" r="2.5" fill="#F2E9DC"/><rect x="${doorX - 40}" y="${groundY - 2}" width="80" height="8" fill="#C9C2B4"/><text x="16" y="${h - 14}" font-family="monospace" font-size="13" fill="#3B4A3B" opacity="0.55">${s.name.toUpperCase()} — REF ${String(i + 1).padStart(2, '0')}</text></svg>`;
+}
+
+function houseImageDataUri(i) {
+  const s = HOUSE_STYLES[i % HOUSE_STYLES.length];
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(houseSVGMarkup(s, i));
+}
+
+const HOUSE_IMAGES = HOUSE_STYLES.map((_, i) => houseImageDataUri(i));
+
+const HERO_BLUEPRINT_DATA_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" width="1600" height="700" preserveAspectRatio="xMidYMid slice"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#173252" stroke-width="1"/></pattern><pattern id="gridBig" width="200" height="200" patternUnits="userSpaceOnUse"><path d="M 200 0 L 0 0 0 200" fill="none" stroke="#1E3E63" stroke-width="1.5"/></pattern></defs><rect width="1600" height="700" fill="#0A1A2F"/><rect width="1600" height="700" fill="url(#grid)"/><rect width="1600" height="700" fill="url(#gridBig)"/><g fill="none" stroke="#DCE7EA" stroke-width="2.5" opacity="0.85"><rect x="230" y="220" width="520" height="340"/><line x1="230" y1="360" x2="750" y2="360"/><line x1="490" y1="220" x2="490" y2="360"/><line x1="490" y1="360" x2="490" y2="560"/><line x1="610" y1="360" x2="610" y2="560"/><rect x="340" y="255" width="70" height="10"/><rect x="560" y="255" width="70" height="10"/></g><g fill="none" stroke="#FF6B2C" stroke-width="3"><line x1="230" y1="590" x2="750" y2="590"/><line x1="230" y1="582" x2="230" y2="598"/><line x1="750" y1="582" x2="750" y2="598"/></g><text x="440" y="615" font-family="monospace" font-size="16" fill="#FF6B2C" opacity="0.9">52'-0"</text><g fill="none" stroke="#5FB6C9" stroke-width="1.5" opacity="0.55"><rect x="900" y="140" width="430" height="300" transform="rotate(2 900 140)"/><circle cx="1115" cy="290" r="90"/><line x1="900" y1="140" x2="1330" y2="440"/></g><g stroke="#DCE7EA" stroke-width="1" opacity="0.3"><line x1="0" y1="60" x2="1600" y2="60"/><line x1="0" y1="640" x2="1600" y2="640"/></g></svg>`);
 
 // Picks the least-used image across the current board so cards never repeat randomly.
 // Guarded for the moment the initial seed board is being built, before S exists yet.

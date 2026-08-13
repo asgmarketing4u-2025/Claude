@@ -91,7 +91,7 @@ function renderHero() {
   if (expanded) {
     root.innerHTML = `
       <section class="hero hero--full">
-        <div class="hero__bg" style="background-image:url('images/hero-blueprint.svg')"></div>
+        <div class="hero__bg" style="background-image:url('${HERO_BLUEPRINT_DATA_URI}')"></div>
         <div class="hero__overlay">
           <p class="hero__eyebrow">DWG A-00 — REAL ESTATE COMMAND CENTER</p>
           <h1 class="hero__headline">Stop losing deals in your notes app.<br>Run your whole pipeline from one sheet.</h1>
