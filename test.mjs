@@ -324,6 +324,7 @@ async function main() {
   await page.click('[data-action="setSubtabA"][data-subtab="01"]');
   await page.click('[data-action="openFinder"]');
   await page.waitForSelector('#finderInput');
+  await new Promise(r => setTimeout(r, 50)); // focus() fires via setTimeout(0) in the app; let that tick run
   check('Finder input is auto-focused on open', await page.evaluate(() => document.activeElement && document.activeElement.id === 'finderInput'));
   await page.type('#finderInput', 'Greenmount');
   await new Promise(r => setTimeout(r, 80));
