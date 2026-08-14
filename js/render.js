@@ -16,6 +16,22 @@ const SUBTABS_A = [
   { key: '10', label: 'REPORTS', builtin: false },
 ];
 
+const SUBTABS_B = [
+  { key: '01', label: 'LEAD PIPELINE', builtin: true },
+  { key: '02', label: 'LISTINGS & SHOWINGS', builtin: true },
+  { key: '03', label: 'CONTRACTS', builtin: true },
+  { key: '04', label: 'COMMISSIONS', builtin: true },
+  { key: '05', label: 'FOLLOW-UPS & MARKETING', builtin: true },
+  { key: '06', label: 'REFERRALS', builtin: true },
+];
+
+const SUBTABS_C = [
+  { key: '01', label: 'DAILY BRIEFING', builtin: true },
+  { key: '02', label: 'WEEKLY REPORT', builtin: true },
+  { key: '03', label: 'DATA INTAKE', builtin: true },
+  { key: '04', label: 'VAULT & SHARING', builtin: true },
+];
+
 function render() {
   applyTheme();
   applyMaskedMode();
@@ -125,15 +141,31 @@ function renderSheetTabs() {
   `).join('');
 }
 
+function subtabsForSheet(sheet) {
+  if (sheet === 'B') return SUBTABS_B;
+  if (sheet === 'C') return SUBTABS_C;
+  return SUBTABS_A;
+}
+function activeSubtabKeyForSheet(sheet) {
+  if (sheet === 'B') return S.meta.activeSubtabB || '01';
+  if (sheet === 'C') return S.meta.activeSubtabC || '01';
+  return S.meta.activeSubtabA || '01';
+}
+function subtabSetActionForSheet(sheet) {
+  if (sheet === 'B') return 'setSubtabB';
+  if (sheet === 'C') return 'setSubtabC';
+  return 'setSubtabA';
+}
+
 function renderSubTabs() {
   const root = document.getElementById('subTabsRoot');
   if (!root) return;
-  if (S.meta.activeSheet !== 'A') {
-    root.innerHTML = `<button type="button" class="subtab is-active" data-action="none">01 &nbsp; COMING NEXT</button>`;
-    return;
-  }
-  root.innerHTML = SUBTABS_A.map(t => `
-    <button type="button" class="subtab ${S.meta.activeSubtabA === t.key ? 'is-active' : ''} ${t.builtin ? '' : 'subtab--soon'}" data-action="setSubtabA" data-subtab="${t.key}">${t.key} &nbsp; ${t.label}</button>
+  const sheet = S.meta.activeSheet;
+  const tabs = subtabsForSheet(sheet);
+  const activeKey = activeSubtabKeyForSheet(sheet);
+  const action = subtabSetActionForSheet(sheet);
+  root.innerHTML = tabs.map(t => `
+    <button type="button" class="subtab ${activeKey === t.key ? 'is-active' : ''} ${t.builtin ? '' : 'subtab--soon'}" data-action="${action}" data-subtab="${t.key}">${t.key} &nbsp; ${t.label}</button>
   `).join('');
 }
 
@@ -141,24 +173,43 @@ function renderPanel() {
   const root = document.getElementById('panelRoot');
   if (!root) return;
 
-  if (S.meta.activeSheet === 'B') { root.innerHTML = comingNextPanelHTML('SHEET B — REALTOR', 'Your listings, showings, and buyer pipeline are landing here in the next build session.'); return; }
-  if (S.meta.activeSheet === 'C') { root.innerHTML = comingNextPanelHTML('SHEET C — OPERATIONS', 'Team tasks, KPIs, and the daily briefing roll up here in a future session.'); return; }
-
-  const key = S.meta.activeSubtabA;
-  const builtin = SUBTABS_A.find(t => t.key === key);
+  const sheet = S.meta.activeSheet;
+  const tabs = subtabsForSheet(sheet);
+  const key = activeSubtabKeyForSheet(sheet);
+  const builtin = tabs.find(t => t.key === key);
   if (!builtin || !builtin.builtin) {
-    root.innerHTML = comingNextPanelHTML(`DWG A-${key} — ${builtin ? builtin.label : ''}`, 'This panel is coming in a future session. Everything you build now in Pipeline, Analyzer, Portfolio, Financing, Renovation, and Deadlines will still be right here.');
+    root.innerHTML = comingNextPanelHTML(`DWG ${sheet}-${key} — ${builtin ? builtin.label : ''}`, 'This panel is coming in a future session. Everything already built stays right here.');
     return;
   }
 
-  switch (key) {
-    case '01': root.innerHTML = renderPipelinePanel(); afterRenderPipeline(); break;
-    case '02': root.innerHTML = renderAnalyzerPanel(); afterRenderAnalyzer(); break;
-    case '03': root.innerHTML = renderPortfolioPanel(); break;
-    case '04': root.innerHTML = renderFinancingPanel(); break;
-    case '05': root.innerHTML = renderRenovationPanel(); break;
-    case '06': root.innerHTML = renderDeadlinesPanel(); break;
-    default: root.innerHTML = comingNextPanelHTML('DWG A-' + key, 'Coming next.');
+  if (sheet === 'A') {
+    switch (key) {
+      case '01': root.innerHTML = renderPipelinePanel(); afterRenderPipeline(); break;
+      case '02': root.innerHTML = renderAnalyzerPanel(); afterRenderAnalyzer(); break;
+      case '03': root.innerHTML = renderPortfolioPanel(); break;
+      case '04': root.innerHTML = renderFinancingPanel(); break;
+      case '05': root.innerHTML = renderRenovationPanel(); break;
+      case '06': root.innerHTML = renderDeadlinesPanel(); break;
+      default: root.innerHTML = comingNextPanelHTML('DWG A-' + key, 'Coming next.');
+    }
+  } else if (sheet === 'B') {
+    switch (key) {
+      case '01': root.innerHTML = renderLeadPipelinePanel(); afterRenderLeadPipeline(); break;
+      case '02': root.innerHTML = renderListingsPanel(); break;
+      case '03': root.innerHTML = renderContractsPanel(); break;
+      case '04': root.innerHTML = renderCommissionsPanel(); break;
+      case '05': root.innerHTML = renderFollowUpsPanel(); break;
+      case '06': root.innerHTML = renderReferralsPanel(); break;
+      default: root.innerHTML = comingNextPanelHTML('DWG B-' + key, 'Coming next.');
+    }
+  } else if (sheet === 'C') {
+    switch (key) {
+      case '01': root.innerHTML = renderDailyBriefingPanel(); break;
+      case '02': root.innerHTML = renderWeeklyReportPanel(); break;
+      case '03': root.innerHTML = renderDataIntakePanel(); afterRenderDataIntake(); break;
+      case '04': root.innerHTML = renderVaultPanel(); break;
+      default: root.innerHTML = comingNextPanelHTML('DWG C-' + key, 'Coming next.');
+    }
   }
 }
 
@@ -174,7 +225,7 @@ function comingNextPanelHTML(title, pitch) {
 
 function renderFooter() {
   const sheetEl = document.getElementById('footerSheetValue');
-  if (sheetEl) sheetEl.textContent = 'A-' + (S.meta.activeSheet === 'A' ? (S.meta.activeSubtabA || '01') : '00');
+  if (sheetEl) sheetEl.textContent = S.meta.activeSheet + '-' + activeSubtabKeyForSheet(S.meta.activeSheet);
 }
 
 /* ============================================================

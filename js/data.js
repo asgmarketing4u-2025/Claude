@@ -188,3 +188,175 @@ const ACTIVE_LOANS_SEED = [
 ];
 
 const OFFERS_LOG_SEED = [];
+
+/* ============================================================
+   SHEET B — Realtor reference data & seed board (Session 2)
+   ============================================================ */
+
+const LEAD_STAGES = [
+  { key: 'new_lead',      label: 'New Lead' },
+  { key: 'contacted',     label: 'Contacted' },
+  { key: 'appt_set',      label: 'Appt Set' },
+  { key: 'active_client', label: 'Active Client' },
+  { key: 'under_contract', label: 'Under Contract' },
+  { key: 'closed',        label: 'Closed' },
+];
+const LEAD_STAGE_INDEX = Object.fromEntries(LEAD_STAGES.map((s, i) => [s.key, i]));
+
+// How many days out the next follow-up gets set to when a lead advances a stage —
+// the funnel tightens the closer someone gets to closing.
+const LEAD_FOLLOWUP_DAYS = {
+  new_lead: 3, contacted: 3, appt_set: 2, active_client: 2, under_contract: 1, closed: 30,
+};
+
+const CONTRACT_MILESTONES = [
+  { key: 'accepted',       label: 'Accepted' },
+  { key: 'emd_in',         label: 'EMD In' },
+  { key: 'inspection',     label: 'Inspection' },
+  { key: 'appraisal',      label: 'Appraisal' },
+  { key: 'clear_to_close', label: 'Clear to Close' },
+  { key: 'settlement',     label: 'Settlement' },
+];
+
+function freshMilestones() {
+  return CONTRACT_MILESTONES.map(m => ({ key: m.key, done: false }));
+}
+
+function uidLead() { return uid('lead'); }
+
+function seedLead(overrides) {
+  const base = {
+    id: uidLead(),
+    name: '', role: 'buyer', source: 'Referral',
+    stage: 'new_lead',
+    phone: '', email: '', budget: 0, area: '', loanStatus: 'Not started',
+    followUpDate: futureDate(LEAD_FOLLOWUP_DAYS.new_lead),
+    notes: '',
+    activityLog: [], outreachLog: [],
+    createdAt: Date.now(),
+  };
+  return Object.assign(base, overrides);
+}
+
+function buildSeedLeads() {
+  return [
+    seedLead({ name: 'Jamal Whitfield', role: 'buyer', source: 'Zillow', stage: 'new_lead', phone: '(410) 555-0210', email: 'jamal.whitfield@example.com', budget: 320000, area: 'Hampden / Remington', loanStatus: 'Not started', followUpDate: futureDate(2), notes: 'First-time buyer, wants a fixer-upper.' }),
+    seedLead({ name: 'Priya Adams', role: 'seller', source: 'Past Client Referral', stage: 'contacted', phone: '(410) 555-0221', email: 'priya.adams@example.com', budget: 0, area: 'Canton', loanStatus: 'N/A', followUpDate: futureDate(1), notes: 'Downsizing, wants to list by spring.' }),
+    seedLead({ name: 'Devon Marsh', role: 'buyer', source: 'Open House', stage: 'appt_set', phone: '(410) 555-0233', email: 'devon.marsh@example.com', budget: 275000, area: 'Hamilton', loanStatus: 'Pre-approved', followUpDate: futureDate(1), notes: 'Showing Saturday 10am.' }),
+    seedLead({ name: 'Renee Castillo', role: 'buyer', source: 'Facebook Ad', stage: 'active_client', phone: '(410) 555-0247', email: 'renee.castillo@example.com', budget: 410000, area: 'Federal Hill', loanStatus: 'Pre-approved', followUpDate: futureDate(2), notes: 'Made two offers, both lost. Adjusting budget.' }),
+    seedLead({ name: 'Terrence Fields', role: 'seller', source: 'Referral', stage: 'under_contract', phone: '(410) 555-0258', email: 'terrence.fields@example.com', budget: 0, area: 'Roland Park', loanStatus: 'N/A', followUpDate: futureDate(1), notes: 'Under contract, closing in 3 weeks.' }),
+    seedLead({ name: 'Alicia Byrne', role: 'buyer', source: 'Google', stage: 'contacted', phone: '(410) 555-0264', email: 'alicia.byrne@example.com', budget: 250000, area: 'Belair-Edison', loanStatus: 'In process', followUpDate: futureDate(0), notes: 'Waiting on pre-approval letter.' }),
+    seedLead({ name: 'Marcus Webb', role: 'buyer', source: 'Sign Call', stage: 'new_lead', phone: '(410) 555-0118', email: 'marcus.webb@example.com', budget: 245000, area: 'Greenmount West', loanStatus: 'Not started', followUpDate: futureDate(-1), notes: 'Left a voicemail, no callback yet.' }),
+    seedLead({ name: 'Sandra Okafor', role: 'seller', source: 'Referral', stage: 'appt_set', phone: '(410) 555-0388', email: 'sandra.okafor@example.com', budget: 0, area: 'Govans', loanStatus: 'N/A', followUpDate: futureDate(3), notes: 'Listing consult booked.' }),
+  ];
+}
+
+function seedListing(overrides) {
+  const base = {
+    id: uid('list'),
+    address: '', price: 0, status: 'active', listDate: todayISO(),
+    marketingChecklist: [
+      { id: uidShort(), label: 'Professional photos', done: false },
+      { id: uidShort(), label: 'Yard sign installed', done: false },
+      { id: uidShort(), label: 'MLS listing live', done: false },
+      { id: uidShort(), label: 'Social media post', done: false },
+      { id: uidShort(), label: 'Brochure / flyer', done: false },
+      { id: uidShort(), label: 'Open house scheduled', done: false },
+    ],
+    showings: [],
+  };
+  return Object.assign(base, overrides);
+}
+
+function buildSeedListings() {
+  return [
+    seedListing({ address: '2210 Eastern Ave', price: 289000, status: 'active', listDate: futureDate(-12),
+      marketingChecklist: [
+        { id: uidShort(), label: 'Professional photos', done: true },
+        { id: uidShort(), label: 'Yard sign installed', done: true },
+        { id: uidShort(), label: 'MLS listing live', done: true },
+        { id: uidShort(), label: 'Social media post', done: false },
+        { id: uidShort(), label: 'Brochure / flyer', done: false },
+        { id: uidShort(), label: 'Open house scheduled', done: true },
+      ],
+      showings: [{ id: uidShort(), date: futureDate(-3), buyerName: 'Devon Marsh', feedback: 'Loved the kitchen, worried about street parking.' }] }),
+    seedListing({ address: '4417 Roland Ave', price: 615000, status: 'active', listDate: futureDate(-5),
+      marketingChecklist: [
+        { id: uidShort(), label: 'Professional photos', done: true },
+        { id: uidShort(), label: 'Yard sign installed', done: true },
+        { id: uidShort(), label: 'MLS listing live', done: true },
+        { id: uidShort(), label: 'Social media post', done: true },
+        { id: uidShort(), label: 'Brochure / flyer', done: false },
+        { id: uidShort(), label: 'Open house scheduled', done: false },
+      ] }),
+    seedListing({ address: '1319 Light St', price: 349000, status: 'pending', listDate: futureDate(-28),
+      marketingChecklist: [
+        { id: uidShort(), label: 'Professional photos', done: true },
+        { id: uidShort(), label: 'Yard sign installed', done: true },
+        { id: uidShort(), label: 'MLS listing live', done: true },
+        { id: uidShort(), label: 'Social media post', done: true },
+        { id: uidShort(), label: 'Brochure / flyer', done: true },
+        { id: uidShort(), label: 'Open house scheduled', done: true },
+      ] }),
+    seedListing({ address: '6602 Hillen Rd', price: 219000, status: 'coming_soon', listDate: futureDate(2),
+      marketingChecklist: [
+        { id: uidShort(), label: 'Professional photos', done: false },
+        { id: uidShort(), label: 'Yard sign installed', done: false },
+        { id: uidShort(), label: 'MLS listing live', done: false },
+        { id: uidShort(), label: 'Social media post', done: false },
+        { id: uidShort(), label: 'Brochure / flyer', done: false },
+        { id: uidShort(), label: 'Open house scheduled', done: false },
+      ] }),
+  ];
+}
+
+function seedContract(overrides) {
+  const base = {
+    id: uid('ctr'),
+    address: '', buyerName: '', sellerName: '', salePrice: 0,
+    commissionRatePct: 3, brokerSplitPct: 80,
+    milestones: freshMilestones(),
+    commissionStatus: 'pending',
+    closedDate: null,
+    createdAt: Date.now(),
+  };
+  return Object.assign(base, overrides);
+}
+
+function markMilestonesDone(count) {
+  return CONTRACT_MILESTONES.map((m, i) => ({ key: m.key, done: i < count }));
+}
+
+function buildSeedContracts() {
+  return [
+    seedContract({ address: '1319 Light St', buyerName: 'Renee Castillo', sellerName: 'Priya Adams', salePrice: 349000, commissionRatePct: 3, brokerSplitPct: 80, milestones: markMilestonesDone(3) }),
+    seedContract({ address: '918 S Ann St', buyerName: 'Terrence Fields', sellerName: 'Owner (rep. seller)', salePrice: 298000, commissionRatePct: 3, brokerSplitPct: 80, milestones: markMilestonesDone(5) }),
+    seedContract({ address: '3708 Elm Ave', buyerName: 'Kevin Ortiz', sellerName: 'Marta Ellison', salePrice: 262000, commissionRatePct: 2.5, brokerSplitPct: 75, milestones: markMilestonesDone(6), commissionStatus: 'paid', closedDate: futureDate(-40) }),
+    seedContract({ address: '512 Cathedral St', buyerName: 'Aisha Grant', sellerName: 'Ben Torres', salePrice: 455000, commissionRatePct: 3, brokerSplitPct: 80, milestones: markMilestonesDone(6), commissionStatus: 'paid', closedDate: futureDate(-15) }),
+  ];
+}
+
+function seedReferral(overrides) {
+  const base = {
+    id: uid('ref'),
+    name: '', phone: '', email: '', lastTouch: todayISO(), nextTouchDate: futureDate(90), notes: '',
+  };
+  return Object.assign(base, overrides);
+}
+
+function buildSeedReferrals() {
+  return [
+    seedReferral({ name: 'Kevin Ortiz', phone: '(410) 555-0301', email: 'kevin.ortiz@example.com', lastTouch: futureDate(-40), nextTouchDate: futureDate(5), notes: 'Closed last spring, loves referring coworkers.' }),
+    seedReferral({ name: 'Aisha Grant', phone: '(410) 555-0312', email: 'aisha.grant@example.com', lastTouch: futureDate(-70), nextTouchDate: futureDate(-2), notes: 'Anniversary of closing is next month — send a gift.' }),
+    seedReferral({ name: 'Marta Ellison', phone: '(410) 555-0329', email: 'marta.ellison@example.com', lastTouch: futureDate(-100), nextTouchDate: futureDate(20), notes: 'Sold her rowhouse, still a fan.' }),
+    seedReferral({ name: 'Ben Torres', phone: '(410) 555-0341', email: 'ben.torres@example.com', lastTouch: futureDate(-15), nextTouchDate: futureDate(60), notes: 'Just closed on Cathedral St.' }),
+  ];
+}
+
+/* ============================================================
+   SHEET C — Operations reference data (Session 2)
+   ============================================================ */
+
+function buildSeedDocuments() {
+  return [];
+}

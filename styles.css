@@ -432,6 +432,69 @@ kbd { font-family: var(--font-mono); font-size: 0.62rem; background: var(--bg); 
 .footer-block__k { color: var(--ink-dim); letter-spacing: 0.06em; }
 .footer-block__brand { color: var(--orange); font-weight: 700; letter-spacing: 0.06em; }
 
+/* ============================================================
+   Session 2 — Sheet B / Sheet C / Demo gate / Lab Link
+   ============================================================ */
+
+/* ---------- demo/user mode + sync pill ---------- */
+.pill-toggle.is-active-mode { border-color: var(--orange); color: var(--orange); background: rgba(255, 107, 44, 0.1); }
+#userModeBtn.is-user-unlocked { border-color: var(--mint); color: var(--mint); background: rgba(74, 222, 156, 0.12); }
+.sync-pill { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.05em; padding: 6px 10px; border-radius: 999px; border: 1.5px solid var(--line-strong); color: var(--muted); }
+.sync-pill--ok { border-color: var(--mint); color: var(--mint); }
+.sync-pill--busy { border-color: var(--cyan); color: var(--cyan); }
+.sync-pill--danger { border-color: var(--danger); color: var(--danger); }
+.sync-pill--muted { color: var(--muted); }
+.modal--gate { max-width: 420px; }
+.gate-message { color: var(--ink-dim); margin-bottom: 14px; line-height: 1.5; }
+.gate-error { color: var(--danger); font-family: var(--font-mono); font-size: 0.75rem; margin-top: 8px; }
+
+/* ---------- lead cards (Sheet B pipeline) ---------- */
+.lead-card .card__body { padding-top: 14px; }
+.lead-role { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 999px; margin-left: 6px; border: 1px solid var(--line-strong); }
+.lead-role--buyer { color: var(--cyan); border-color: var(--cyan); }
+.lead-role--seller { color: var(--orange); border-color: var(--orange); }
+.card__strategy--closed { background: rgba(74, 222, 156, 0.25); }
+
+/* ---------- contract milestones ---------- */
+.milestone-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 12px 0; }
+.milestone-connector { flex: 0 0 14px; height: 2px; background: var(--line-strong); }
+.milestone-dot { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; padding: 4px; }
+.milestone-dot__mark { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); background: var(--bg); }
+.milestone-dot__label { font-family: var(--font-mono); font-size: 0.58rem; color: var(--muted); text-align: center; max-width: 70px; }
+.milestone-dot--done .milestone-dot__mark { background: var(--mint); border-color: var(--mint); }
+.milestone-dot--done .milestone-dot__label { color: var(--mint); }
+.milestone-dot--current { cursor: pointer; }
+.milestone-dot--current .milestone-dot__mark { border-color: var(--orange); animation: pulseMilestone 1.4s infinite; }
+.milestone-dot--current .milestone-dot__label { color: var(--orange); }
+.milestone-dot--pending { cursor: default; opacity: 0.6; }
+@keyframes pulseMilestone { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,44,0.5); } 50% { box-shadow: 0 0 0 5px rgba(255,107,44,0); } }
+@media (prefers-reduced-motion: reduce) { .milestone-dot--current .milestone-dot__mark { animation: none; } }
+
+/* ---------- reveal-to-see amounts ---------- */
+.reveal-money { cursor: pointer; }
+.reveal-money:hover { color: var(--orange); }
+
+/* ---------- daily briefing ---------- */
+.briefing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.briefing-section { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+.briefing-section__title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 10px; }
+.briefing-line { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 0.85rem; }
+.briefing-line:last-child { border-bottom: none; }
+.briefing-line__pri { font-family: var(--font-mono); font-weight: 700; font-size: 0.68rem; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
+.briefing-line--P1 .briefing-line__pri { background: var(--danger); color: #fff; }
+.briefing-line--P2 .briefing-line__pri { background: var(--orange); color: #14100C; }
+.briefing-line--P3 .briefing-line__pri { background: var(--muted); color: #14100C; }
+
+/* ---------- weekly report ---------- */
+.weekly-writeup { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+.weekly-writeup__section { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+.weekly-writeup__section h4 { font-family: var(--font-mono); font-size: 0.68rem; color: var(--orange); letter-spacing: 0.08em; margin-bottom: 8px; }
+.weekly-writeup__section p { line-height: 1.5; color: var(--ink-dim); font-size: 0.85rem; }
+
+/* ---------- data intake ---------- */
+.intake-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.intake-grid input[type="file"] { display: block; margin: 10px 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-dim); }
+
 /* ---------- responsive tweaks ---------- */
 @media (max-width: 720px) {
   .title-block { padding: 10px 14px; }

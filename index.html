@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="js/gate.js"></script>
 </head>
 <body data-theme="dark">
 
@@ -28,6 +29,9 @@
     <div class="title-block__field"><span class="title-block__k">SCALE</span><span>1:REALITY</span></div>
   </div>
   <div class="title-block__right">
+    <span id="syncStatusPill" class="sync-pill sync-pill--muted">LOCAL</span>
+    <button type="button" id="demoModeBtn" class="pill-toggle is-active-mode" data-action="toggleSiteMode" data-target-mode="demo">DEMO MODE</button>
+    <button type="button" id="userModeBtn" class="pill-toggle" data-action="toggleSiteMode" data-target-mode="user">USER MODE</button>
     <button type="button" id="needsYouBadge" class="badge-flag" data-action="jumpToUrgent" hidden>⚑ 0</button>
     <button type="button" class="btn btn--ghost btn--xs" data-action="openFinder">⌕ FIND <kbd>Ctrl K</kbd></button>
     <button type="button" id="maskToggleBtn" class="pill-toggle" data-action="toggleMasked">🔒 MASKED</button>
@@ -55,6 +59,7 @@
 
 <div id="modalRoot" class="modal-root"></div>
 <div id="finderRoot" class="modal-root"></div>
+<div id="gateModalRoot" class="modal-root"></div>
 <div id="toastStack" class="toast-stack"></div>
 
 <script src="js/data.js"></script>
@@ -62,8 +67,14 @@
 <script src="js/state.js"></script>
 <script src="js/analyzer.js"></script>
 <script src="js/render.js"></script>
+<script src="js/render-b.js"></script>
+<script src="js/render-c.js"></script>
 <script src="js/actions.js"></script>
+<script src="js/actions-b.js"></script>
+<script src="js/actions-c.js"></script>
 <script src="js/finder.js"></script>
+<script src="js/csv.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

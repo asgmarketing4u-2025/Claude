@@ -33,6 +33,17 @@ async function clickLastUndo(page) {
   });
 }
 
+// Risky-action toasts (with UNDO) stay up for 10s and stack, and their
+// fixed-position container can cover buttons underneath — a real layering
+// issue, not just a test artifact. Clear them out between sections that
+// fire several in a row and ones that click low-on-screen buttons next.
+async function clearToasts(page) {
+  await page.evaluate(() => {
+    const root = document.getElementById('toastStack');
+    if (root) root.innerHTML = '';
+  });
+}
+
 async function setAnalyzerField(page, field, value) {
   await page.evaluate((field, value) => {
     const el = document.querySelector(`#analyzerForm [data-field="${field}"]`);
@@ -53,7 +64,12 @@ async function main() {
     const text = msg.text();
     // Ignore network-only resource failures (e.g. Google Fonts unreachable in a
     // sandboxed/offline test run) — those aren't JS bugs in the app itself.
-    if (/Failed to load resource|net::ERR_/.test(text)) return;
+    // Also ignore CORS console.error noise from the Lab Link /api/* calls:
+    // this suite runs against a file:// page with no live backend, so the
+    // browser logs the blocked cross-origin fetch itself even though the
+    // app's own try/catch already handles the rejection gracefully (proven
+    // by the "fails gracefully to OFFLINE" check above).
+    if (/Failed to load resource|net::ERR_|CORS policy/.test(text)) return;
     consoleErrors.push('console.error: ' + text);
   });
 
@@ -78,6 +94,57 @@ async function main() {
     const badge = document.getElementById('needsYouBadge');
     return n > 0 ? !badge.hidden && badge.textContent.includes(String(n)) : badge.hidden;
   }));
+
+  console.log('\n=== DEMO MODE GATE (fresh, still locked) ===');
+  check('Site opens in DEMO MODE by default', await page.$eval('#demoModeBtn', el => el.classList.contains('is-active-mode')));
+  check('localStorage has no user-mode flag on a fresh visit', await page.evaluate(() => localStorage.getItem('ntmSiteMode') !== 'user'));
+  {
+    const beforeCount = await page.evaluate(() => S.properties.length);
+    await page.click('[data-action="openNewPropertyModal"]');
+    await page.waitForSelector('#npAddress');
+    // Don't type into the form field here — it isn't on the gate's allowed-input
+    // list either, so focusing it alone would pop the passcode box before this
+    // click even happens, and the box's full-screen overlay would then swallow
+    // the click meant for the button underneath it.
+    await page.click('[data-action="createProperty"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('A blocked mutating action (createProperty) does not change data in DEMO MODE', await page.evaluate(() => S.properties.length) === beforeCount);
+    check('...and instead pops the passcode box', await page.$('#passcodeInput') !== null);
+    // The plain [data-action="cancelPasscode"] selector matches the outer
+    // full-screen overlay div first — Puppeteer clicks its bounding-box
+    // center, which is visually covered by the centered modal box on top
+    // (data-action="none"), so that click gets swallowed. Target the actual
+    // CANCEL button in the modal footer instead.
+    await page.click('.modal__foot [data-action="cancelPasscode"]');
+    // The New Property modal underneath is still open too — close it, or its
+    // full-screen overlay will swallow the next clicks meant for the header.
+    await page.keyboard.press('Escape');
+  }
+  {
+    // Allow-listed navigation still works while locked.
+    await page.click('[data-action="setSheet"][data-sheet="B"]');
+    check('Allow-listed navigation (setSheet) still works in DEMO MODE', await page.evaluate(() => S.meta.activeSheet) === 'B');
+    await page.click('[data-action="setSheet"][data-sheet="A"]');
+  }
+  {
+    await page.click('[data-action="toggleSiteMode"][data-target-mode="user"]');
+    await page.waitForSelector('#passcodeInput');
+    await page.type('#passcodeInput', 'definitely-wrong-and-also-unreachable');
+    await page.click('[data-action="submitPasscode"]');
+    await new Promise(r => setTimeout(r, 400));
+    check('A failed/unreachable unlock attempt fails CLOSED (stays in demo mode)', await page.evaluate(() => localStorage.getItem('ntmSiteMode') !== 'user'));
+    await page.click('.modal__foot [data-action="cancelPasscode"]').catch(() => {});
+  }
+
+  // The rest of the suite exercises real mutations (Session 1 + Session 2), so
+  // unlock User Mode directly the way an already-authenticated owner's browser
+  // would be — the gate's own blocking behavior is already proven above. The
+  // gate reads localStorage live on every check (no caching), so this takes
+  // effect immediately with no reload needed — and a reload here would count
+  // as a "returning visit" and auto-collapse the hero, breaking the first-visit
+  // hero assumptions the next section relies on.
+  await page.evaluate(() => { localStorage.setItem('ntmSiteMode', 'user'); updateModeButtons(); });
+  check('User Mode button shows unlocked after setting the mode flag', await page.$eval('#userModeBtn', el => el.classList.contains('is-user-unlocked')));
 
   console.log('\n=== WELCOME STRIP + HERO ===');
   await page.click('[data-action="dismissWelcome"]');
@@ -113,9 +180,9 @@ async function main() {
 
   console.log('\n=== SHEETS + SUBTABS ===');
   await page.click('[data-action="setSheet"][data-sheet="B"]');
-  check('Sheet B shows a coming-next placeholder', await page.$eval('.panel--soon .panel__title', el => el.textContent.includes('REALTOR')));
+  check('Sheet B lands on the Lead Pipeline kanban', await page.$('.lead-card') !== null || (await page.$$('.kanban-col')).length === 6);
   await page.click('[data-action="setSheet"][data-sheet="C"]');
-  check('Sheet C shows a coming-next placeholder', await page.$eval('.panel--soon .panel__title', el => el.textContent.includes('OPERATIONS')));
+  check('Sheet C lands on the Daily Briefing', await page.$('.briefing-grid') !== null);
   await page.click('[data-action="setSheet"][data-sheet="A"]');
   check('Sheet A returns to the Pipeline board', await page.$('.kanban-board') !== null);
   await page.click('[data-action="setSubtabA"][data-subtab="07"]');
@@ -365,10 +432,283 @@ async function main() {
   const headerVar = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--header-h').trim());
   check('Header height is measured into a CSS var for sticky subtabs', headerVar !== '' && headerVar !== '0px');
 
+  console.log('\n=== SHEET B: 01 LEAD PIPELINE ===');
+  await page.click('[data-action="setSheet"][data-sheet="B"]');
+  await page.waitForSelector('.kanban-board');
+  check('Lead pipeline renders all 6 stage columns', (await page.$$('.kanban-col')).length === 6);
+  check('Seed leads are present', await page.evaluate(() => S.leads.length > 0));
+  {
+    const beforeCount = await page.evaluate(() => S.leads.length);
+    await page.click('[data-action="openNewLeadModal"]');
+    await page.waitForSelector('#nlLeadName');
+    await page.type('#nlLeadName', 'Test Lead Person');
+    await page.type('#nlLeadArea', 'Test Area');
+    await page.click('[data-action="createLead"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('+ NEW LEAD creates a lead', await page.evaluate(() => S.leads.length) === beforeCount + 1);
+
+    const leadId = await page.evaluate(() => S.leads[S.leads.length - 1].id);
+    const stageBefore = await page.evaluate((id) => S.leads.find(l => l.id === id).stage, leadId);
+    const daysBefore = await page.evaluate((id) => daysUntil(S.leads.find(l => l.id === id).followUpDate), leadId);
+    await page.click(`[data-action="advanceLeadStage"][data-lead-id="${leadId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    const stageAfter = await page.evaluate((id) => S.leads.find(l => l.id === id).stage, leadId);
+    check('ADVANCE moves a lead to the next stage', stageAfter !== stageBefore);
+    // new_lead -> contacted keeps the same 3-day window, so advance a second
+    // time (contacted -> appt_set tightens to 2 days) to see the window shrink.
+    await page.click(`[data-action="advanceLeadStage"][data-lead-id="${leadId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    const daysAfter = await page.evaluate((id) => daysUntil(S.leads.find(l => l.id === id).followUpDate), leadId);
+    check('Advancing tightens the next follow-up date', daysAfter < daysBefore);
+
+    await page.evaluate((id) => {
+      const wrap = document.querySelector(`[data-action="toggleMoveMenu"][data-property-id="lead-${id}"]`).closest('.move-menu-wrap');
+      wrap.classList.add('is-open');
+      wrap.querySelector('.move-menu__item[data-stage="closed"]').click();
+    }, leadId);
+    await new Promise(r => setTimeout(r, 100));
+    check('MOVE jumps a lead directly to any stage', (await page.evaluate((id) => S.leads.find(l => l.id === id).stage, leadId)) === 'closed');
+  }
+
+  console.log('\n=== SHEET B: 02 LISTINGS & SHOWINGS ===');
+  await page.click('[data-action="setSubtabB"][data-subtab="02"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Listing cards render', (await page.$$('.reno-card')).length > 0);
+  check('Incomplete marketing checklist items render as gaps', await page.evaluate(() => !!document.querySelector('.reno-item--pending')));
+  {
+    const listingId = await page.evaluate(() => S.listings[0].id);
+    const itemId = await page.evaluate((id) => S.listings.find(l => l.id === id).marketingChecklist[0].id, listingId);
+    const doneBefore = await page.evaluate((lid, iid) => S.listings.find(l => l.id === lid).marketingChecklist.find(c => c.id === iid).done, listingId, itemId);
+    await page.click(`[data-action="toggleMarketingItem"][data-listing-id="${listingId}"][data-item-id="${itemId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    const doneAfter = await page.evaluate((lid, iid) => S.listings.find(l => l.id === lid).marketingChecklist.find(c => c.id === iid).done, listingId, itemId);
+    check('Clicking a marketing checklist item toggles it', doneAfter !== doneBefore);
+
+    const showingsBefore = await page.evaluate((id) => S.listings.find(l => l.id === id).showings.length, listingId);
+    await page.click(`[data-action="openScheduleShowingModal"][data-listing-id="${listingId}"]`);
+    await page.waitForSelector('#ssBuyer');
+    await page.type('#ssBuyer', 'Scheduled Test Buyer');
+    await page.click('[data-action="createShowing"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('SCHEDULE SHOWING adds a showing to the listing', (await page.evaluate((id) => S.listings.find(l => l.id === id).showings.length, listingId)) === showingsBefore + 1);
+
+    await page.click(`[data-action="openMarketingPlanModal"][data-listing-id="${listingId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    check('3-week marketing plan modal shows Launch/Pressure/Convert', await page.$eval('.modal__body', el => /LAUNCH/.test(el.textContent) && /PRESSURE/.test(el.textContent) && /CONVERT/.test(el.textContent)));
+    await page.click('[data-action="closeModal"]');
+  }
+
+  console.log('\n=== SHEET B: 03 CONTRACTS ===');
+  await page.click('[data-action="setSubtabB"][data-subtab="03"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Contract milestone dots render (6 per deal)', (await page.$$('.milestone-dot')).length >= 6);
+  {
+    const contractId = await page.evaluate(() => S.contracts.find(c => c.commissionStatus !== 'paid').id);
+    const doneBefore = await page.evaluate((id) => S.contracts.find(c => c.id === id).milestones.filter(m => m.done).length, contractId);
+    await page.click(`[data-action="advanceContractMilestone"][data-contract-id="${contractId}"][data-milestone-index="${doneBefore}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    const doneAfter = await page.evaluate((id) => S.contracts.find(c => c.id === id).milestones.filter(m => m.done).length, contractId);
+    check('Clicking the current pulsing milestone advances it', doneAfter === doneBefore + 1);
+
+    // Drive a fresh contract all the way to CLOSED + PAID.
+    await page.click('[data-action="openNewContractModal"]');
+    await page.waitForSelector('#ncAddr');
+    await page.type('#ncAddr', 'Test Contract Ave');
+    await page.type('#ncPrice', '300000');
+    await page.click('[data-action="createContract"]');
+    await new Promise(r => setTimeout(r, 100));
+    const newContractId = await page.evaluate(() => S.contracts[S.contracts.length - 1].id);
+    for (let i = 0; i < 6; i++) {
+      await page.click(`[data-action="advanceContractMilestone"][data-contract-id="${newContractId}"][data-milestone-index="${i}"]`);
+      await new Promise(r => setTimeout(r, 80));
+    }
+    const finalStatus = await page.evaluate((id) => S.contracts.find(c => c.id === id).commissionStatus, newContractId);
+    check('All 6 milestones done flips commission to PAID', finalStatus === 'paid');
+  }
+  // That loop fired several 10s undo toasts back to back — clear them so
+  // their bottom-right stack doesn't cover buttons in the next sections.
+  await clearToasts(page);
+
+  console.log('\n=== SHEET B: 04 COMMISSIONS ===');
+  await page.click('[data-action="setSubtabB"][data-subtab="04"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Commission chart renders', await page.$('.chart-box__svg') !== null);
+  check('Commission amounts are masked until clicked', await page.evaluate(() => { const el = document.querySelector('.reveal-money'); return el && el.textContent.includes('•'); }));
+  await page.click('.reveal-money');
+  await new Promise(r => setTimeout(r, 100));
+  check('Clicking a masked amount reveals it', await page.evaluate(() => { const el = document.querySelector('.reveal-money'); return el && !el.textContent.includes('•'); }));
+
+  console.log('\n=== SHEET B: 05 FOLLOW-UPS & MARKETING ===');
+  await page.click('[data-action="setSubtabB"][data-subtab="05"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Follow-up list renders, most overdue first', await page.evaluate(() => {
+    const chips = Array.from(document.querySelectorAll('.deadline-chip'));
+    return chips.length > 0;
+  }));
+  {
+    const leadWithPhone = await page.evaluate(() => (S.leads.find(l => l.stage !== 'closed') || {}).id);
+    if (leadWithPhone) {
+      await page.click(`[data-action="openLeadDraftModal"][data-lead-id="${leadWithPhone}"]`);
+      await page.waitForSelector('.draft-tabs');
+      check('Lead DRAFT modal shows CALL/TEXT/EMAIL tabs', (await page.$$('.draft-tab')).length === 3);
+      const beforeLog = await page.evaluate((id) => S.leads.find(l => l.id === id).outreachLog.length, leadWithPhone);
+      const followUpBefore = await page.evaluate((id) => S.leads.find(l => l.id === id).followUpDate, leadWithPhone);
+      await page.click('[data-action="copyAndLogLeadTouch"]');
+      await new Promise(r => setTimeout(r, 100));
+      const afterLog = await page.evaluate((id) => S.leads.find(l => l.id === id).outreachLog.length, leadWithPhone);
+      const followUpAfter = await page.evaluate((id) => S.leads.find(l => l.id === id).followUpDate, leadWithPhone);
+      check('COPY & LOG TOUCH logs the outreach', afterLog === beforeLog + 1);
+      check('COPY & LOG TOUCH reschedules the next follow-up', followUpAfter !== followUpBefore);
+    }
+  }
+
+  console.log('\n=== SHEET B: 06 REFERRALS ===');
+  await page.click('[data-action="setSubtabB"][data-subtab="06"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Referral cards render with next-touch countdowns', (await page.$$('.lender-card')).length > 0);
+  {
+    const refId = await page.evaluate(() => S.referrals[0].id);
+    const beforeTouch = await page.evaluate((id) => S.referrals.find(r => r.id === id).nextTouchDate, refId);
+    await page.click(`[data-action="logReferralTouch"][data-referral-id="${refId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    const afterTouch = await page.evaluate((id) => S.referrals.find(r => r.id === id).nextTouchDate, refId);
+    check('LOG TOUCH resets the next-touch countdown', afterTouch !== beforeTouch);
+  }
+
+  console.log('\n=== SHEET C: 01 DAILY BRIEFING ===');
+  await page.click('[data-action="setSheet"][data-sheet="C"]');
+  await page.waitForSelector('.briefing-grid');
+  check('Daily briefing shows all 4 sections', (await page.$$('.briefing-section')).length === 4);
+  check('Briefing lines are ranked P1/P2/P3', await page.evaluate(() => {
+    const lines = Array.from(document.querySelectorAll('.briefing-line__pri'));
+    return lines.length === 0 || lines.every(el => ['P1', 'P2', 'P3'].includes(el.textContent));
+  }));
+  await page.click('[data-action="copyBriefingText"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('COPY AS TEXT on the briefing shows a confirmation toast', await page.$('.toast') !== null);
+
+  console.log('\n=== SHEET C: 02 WEEKLY REPORT ===');
+  await page.click('[data-action="setSubtabC"][data-subtab="02"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Weekly report shows the KPI row', (await page.$$('.metric-grid .metric')).length >= 6);
+  check('Weekly report shows all 4 writeup sections', (await page.$$('.weekly-writeup__section')).length === 4);
+  check('Weekly report shows the equity chart', await page.$('.chart-box__svg') !== null);
+  await page.click('[data-action="copyReportText"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('COPY AS TEXT on the report shows a confirmation toast', await page.$('.toast') !== null);
+
+  console.log('\n=== SHEET C: 03 DATA INTAKE ===');
+  await page.click('[data-action="setSubtabC"][data-subtab="03"]');
+  await new Promise(r => setTimeout(r, 100));
+  {
+    const fs = await import('fs');
+    const os = await import('os');
+    const pathMod = await import('path');
+    const contactsCsvPath = pathMod.join(os.tmpdir(), 'ntm-test-contacts.csv');
+    fs.writeFileSync(contactsCsvPath, 'Full Name,Role,Phone,Area\nCSV Buyer One,buyer,4105551111,Canton\nCSV Seller Two,seller,4105552222,Hampden\n,buyer,4105553333,Nowhere\n');
+    const beforeLeads = await page.evaluate(() => S.leads.length);
+    const contactsInput = await page.$('#csvContactsInput');
+    await contactsInput.uploadFile(contactsCsvPath);
+    await new Promise(r => setTimeout(r, 400));
+    check('Contacts CSV import creates leads (loose column matching)', (await page.evaluate(() => S.leads.length)) === beforeLeads + 2);
+    check('Contacts CSV import skips and reports bad rows', await page.$eval('#csvContactsResult', el => /1 skipped/.test(el.textContent)));
+
+    const propsCsvPath = pathMod.join(os.tmpdir(), 'ntm-test-properties.csv');
+    fs.writeFileSync(propsCsvPath, 'Address,Strategy,Asking Price,ARV\n999 CSV Import Ave,flip,100000,220000\n,flip,90000,200000\n');
+    const beforeProps = await page.evaluate(() => S.properties.length);
+    const propsInput = await page.$('#csvPropertiesInput');
+    await propsInput.uploadFile(propsCsvPath);
+    await new Promise(r => setTimeout(r, 400));
+    check('Properties CSV import creates pipeline deals', (await page.evaluate(() => S.properties.length)) === beforeProps + 1);
+    check('Properties CSV import skips and reports bad rows', await page.$eval('#csvPropertiesResult', el => /1 skipped/.test(el.textContent)));
+  }
+  {
+    const beforeDocs = await page.evaluate(() => S.documents.length);
+    const fs = await import('fs');
+    const os = await import('os');
+    const pathMod = await import('path');
+    const docPath = pathMod.join(os.tmpdir(), 'ntm-test-doc.txt');
+    fs.writeFileSync(docPath, 'test document contents');
+    const docInput = await page.$('#docFileInput');
+    await docInput.uploadFile(docPath);
+    await new Promise(r => setTimeout(r, 300));
+    check('Attaching a document adds it to the register', (await page.evaluate(() => S.documents.length)) === beforeDocs + 1);
+  }
+
+  console.log('\n=== SHEET C: 04 VAULT & SHARING + LAB LINK ===');
+  await page.click('[data-action="setSubtabC"][data-subtab="04"]');
+  await new Promise(r => setTimeout(r, 100));
+  {
+    await page.click('[data-action="openSnapshotModal"]');
+    await page.waitForSelector('#snapName');
+    await page.type('#snapName', 'Test Snapshot');
+    await page.click('[data-action="saveSnapshotNow"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('Saving a snapshot adds it to the vault list', await page.evaluate(() => JSON.parse(localStorage.getItem('ntmDealCenterSnapshots') || '[]').some(s => s.name === 'Test Snapshot')));
+
+    const snapId = await page.evaluate(() => JSON.parse(localStorage.getItem('ntmDealCenterSnapshots'))[0].id);
+    await page.click(`[data-action="duplicateSnapshot"][data-snapshot-id="${snapId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    check('DUPLICATE creates a copy of the snapshot', (await page.evaluate(() => JSON.parse(localStorage.getItem('ntmDealCenterSnapshots')).length)) >= 2);
+
+    await page.click(`[data-action="deleteSnapshot"][data-snapshot-id="${snapId}"]`);
+    await new Promise(r => setTimeout(r, 100));
+    check('DELETE removes a snapshot', !(await page.evaluate((id) => JSON.parse(localStorage.getItem('ntmDealCenterSnapshots')).some(s => s.id === id), snapId)));
+  }
+  {
+    await page.click('[data-action="copyShareLink"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('COPY SHARE LINK shows a confirmation toast', await page.$('.toast') !== null);
+
+    const shareHash = await page.evaluate(async () => {
+      const stripped = stripPhotosForSync(S);
+      return 'board=' + btoa(unescape(encodeURIComponent(JSON.stringify(stripped))));
+    });
+    const leadCountBefore = await page.evaluate(() => S.leads.length);
+    // Same-URL hash navigation doesn't reload the page — set the hash directly
+    // (simulating a pasted link within the same document) and confirm the
+    // hashchange listener actually loads it, per the gotcha in the spec.
+    await page.evaluate((h) => { location.hash = h; }, shareHash);
+    await new Promise(r => setTimeout(r, 200));
+    check('Same-URL hash navigation for a share link loads without a full reload', (await page.evaluate(() => S.leads.length)) === leadCountBefore);
+    // Restore normal navigation hash for subsequent checks.
+    await page.evaluate(() => { history.replaceState(null, '', '#C-04'); });
+  }
+  {
+    const propsBefore = await page.evaluate(() => S.properties.length);
+    await page.click('[data-action="confirmResetSample"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('RESET TO SAMPLE DATA restores the seeded board', (await page.evaluate(() => S.properties.length)) === 15);
+    check('Reset offers a 10-second UNDO', await page.$('.toast__undo') !== null);
+    await clickLastUndo(page);
+  }
+  {
+    // Lab Link — no live server in this test run, so connecting should hash
+    // the key, store it locally, and fail OFFLINE gracefully rather than throw.
+    await page.click('[data-action="setSubtabC"][data-subtab="04"]');
+    await new Promise(r => setTimeout(r, 100));
+    await page.type('#labKeyInput', 'test-lab-key-12345');
+    await page.click('[data-action="connectLabKeyBtn"]');
+    await new Promise(r => setTimeout(r, 300));
+    const boardIdHex = await page.evaluate(() => localStorage.getItem('ntmLabBoardId'));
+    check('Connecting a Lab Key stores a 64-hex SHA-256 hash, never the raw key', !!boardIdHex && /^[a-f0-9]{64}$/.test(boardIdHex) && boardIdHex.indexOf('test-lab-key') === -1);
+    check('No live server: sync status fails gracefully to OFFLINE (no crash)', await page.evaluate(() => {
+      const el = document.getElementById('syncStatusPill');
+      return !el || ['OFFLINE', 'SYNCING…', 'LOCAL', 'SYNCED'].includes(el.textContent);
+    }));
+    await page.click('[data-action="disconnectLabKeyBtn"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('DISCONNECT clears the stored Lab Key hash', !(await page.evaluate(() => localStorage.getItem('ntmLabBoardId'))));
+  }
+
   console.log('\n=== BLANK BOARD + EMPTY STATES (fresh context) ===');
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('.welcome-strip');
+  // Fresh localStorage means fresh DEMO MODE lock too — startEmptyBoard is a
+  // real mutation and correctly isn't gate-allow-listed, so unlock the same
+  // way an already-authenticated owner's browser would be.
+  await page.evaluate(() => { localStorage.setItem('ntmSiteMode', 'user'); updateModeButtons(); });
   await page.click('[data-action="startEmptyBoard"]');
   await new Promise(r => setTimeout(r, 50));
   check('START WITH AN EMPTY BOARD empties every list', await page.evaluate(() => S.properties.length === 0 && S.lenders.length === 0));

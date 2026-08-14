@@ -19,5 +19,8 @@
   "homepage": "https://github.com/asgmarketing4u-2025/Claude#readme",
   "devDependencies": {
     "puppeteer": "^25.6.0"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
   }
 }

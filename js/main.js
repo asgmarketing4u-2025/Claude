@@ -18,6 +18,23 @@ function safeUpdateUrl() {
   }
 }
 
+// A pasted share link looks like #board=<base64 JSON>. Loads it straight into
+// memory for viewing without touching localStorage — nothing is persisted
+// until a real (unlocked) action saves it. Returns true if it consumed one.
+function tryLoadSharedBoardFromHash() {
+  const hash = location.hash || '';
+  const m = hash.match(/^#board=(.+)$/);
+  if (!m) return false;
+  try {
+    const json = decodeURIComponent(escape(atob(m[1])));
+    const parsed = JSON.parse(json);
+    S = migrateState(parsed);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function onGlobalKeydown(e) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
@@ -60,7 +77,8 @@ function setupSwipeHandlers() {
 }
 
 function boot() {
-  initState();
+  const loadedFromShareLink = tryLoadSharedBoardFromHash();
+  if (!loadedFromShareLink) initState();
   render();
   measureHeaderHeight();
   window.addEventListener('load', measureHeaderHeight);
@@ -71,6 +89,9 @@ function boot() {
   document.addEventListener('click', handleDocumentClick);
   document.addEventListener('keydown', onGlobalKeydown);
   setupSwipeHandlers();
+  // Same-URL hash navigation doesn't reload the page, so a pasted share
+  // link needs its own listener to actually take effect.
+  window.addEventListener('hashchange', () => { if (tryLoadSharedBoardFromHash()) render(); });
 }
 
 boot();
