@@ -55,17 +55,21 @@
   <div class="footer-block__field"><span class="footer-block__k">SCALE</span><span>1:REALITY</span></div>
   <div class="footer-block__field"><span class="footer-block__k">SHEET</span><span id="footerSheetValue">A-01</span></div>
   <div class="footer-block__field"><a href="troubleshooting.html" class="footer-block__link" target="_blank" rel="noopener">FIX-IT LEDGER</a></div>
+  <div class="footer-block__field"><a href="film-room.html" class="footer-block__link" target="_blank" rel="noopener">FILM ROOM</a></div>
   <div class="footer-block__field footer-block__brand">NTM DEAL CENTER</div>
 </footer>
 
 <div id="modalRoot" class="modal-root"></div>
 <div id="finderRoot" class="modal-root"></div>
 <div id="gateModalRoot" class="modal-root"></div>
+<div id="igorPanelRoot"></div>
 <div id="toastStack" class="toast-stack"></div>
 
 <script src="js/data.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/errors.js"></script>
+<script src="kb.js"></script>
+<script src="tools.js"></script>
 <script src="js/state.js"></script>
 <script src="js/analyzer.js"></script>
 <script src="js/render.js"></script>
@@ -76,11 +80,17 @@
 <script src="js/actions-b.js"></script>
 <script src="js/actions-c.js"></script>
 <script src="js/actions-tools.js"></script>
-<!-- cityradar.js does a top-level Object.assign(ACTIONS, {...}) (like the
-     actions-*.js files), so it must load after actions.js defines ACTIONS —
-     unlike render-tools.js, which only defines functions that render() calls
-     later, after every script has already executed. -->
+<script src="js/igor-actions.js"></script>
+<!-- cityradar.js and igor-ui.js both do a top-level Object.assign(ACTIONS,
+     {...}) (like the actions-*.js files), so they must load after
+     actions.js defines ACTIONS — unlike render-tools.js, which only
+     defines functions that render() calls later, after every script has
+     already executed. -->
 <script src="js/cityradar.js"></script>
+<script src="js/igor-ui.js"></script>
+<!-- filmroom-ui.js wraps the existing render() (like sync.js wraps save()),
+     so it must load after render.js has defined it. -->
+<script src="js/filmroom-ui.js"></script>
 <script src="js/finder.js"></script>
 <script src="js/csv.js"></script>
 <script src="js/sync.js"></script>

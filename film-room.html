@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NTM Deal Center — Film Room</title>
+<meta name="description" content="Short, narrated video walkthroughs of every NTM Deal Center panel, in AC's voice.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A1A2F'/%3E%3Cpath d='M20 75 L20 30 L50 15 L80 30 L80 75 Z' fill='none' stroke='%23FF6B2C' stroke-width='6'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#0A1A2F; --ink-dim:#4A6178; --muted:#7C93A6; --line:#D7E2E9; --card:#FFFFFF; --paper:#F5F8FA; --orange:#D9541A;
+    --font-display:'Big Shoulders Display',sans-serif; --font-mono:'IBM Plex Mono',monospace; --font-sans:'IBM Plex Sans',sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-sans); }
+  header { background: var(--ink); color:#fff; padding:32px 24px; }
+  header a { color: var(--orange); text-decoration:none; font-family:var(--font-mono); font-size:0.85rem; }
+  h1 { font-family: var(--font-display); font-weight:800; font-size:2rem; margin:8px 0 4px; }
+  header p { color:#B9C6D4; max-width:640px; margin:0; }
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 18px; }
+  .card { background: var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .card__thumb { aspect-ratio: 16/9; background: var(--ink); display:flex; align-items:center; justify-content:center; color:#B9C6D4; font-family:var(--font-mono); font-size:0.75rem; }
+  .card video { width:100%; display:block; background:#000; }
+  .card__body { padding: 12px 14px; }
+  .card__dwg { font-family: var(--font-mono); font-size:0.65rem; color:var(--muted); letter-spacing:0.05em; }
+  .card__title { font-weight:700; margin: 2px 0 8px; }
+  .card__status { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+  .card__status--ready { color: #1F7A4D; }
+  #emptyNote { background:#fff; border:1px solid var(--line); border-left:4px solid var(--orange); border-radius:8px; padding:16px 20px; margin-bottom:20px; color: var(--ink-dim); }
+  #emptyNote code { background:#EEF3F6; padding:2px 6px; border-radius:4px; font-family:var(--font-mono); }
+  footer { text-align:center; padding:24px; color:var(--muted); font-family:var(--font-mono); font-size:0.8rem; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">&larr; BACK TO NTM DEAL CENTER</a>
+  <h1>Film Room</h1>
+  <p>Short, narrated walkthroughs of every panel, in AC's voice. Click WATCH in any panel's header to jump straight here.</p>
+</header>
+<main>
+  <div id="emptyNote" style="display:none;">
+    No walkthroughs have been recorded yet. From the project root, run
+    <code>node scripts/record-walkthrough.mjs</code> (needs ffmpeg installed, and
+    <code>ELEVENLABS_API_KEY</code> set for narration) to generate them.
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<footer>NTM DEAL CENTER — powered by ASG Marketing</footer>
+<script>
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  async function loadJson(url) {
+    try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); } catch (e) { return null; }
+  }
+  function targetSlug() {
+    return (location.hash || '').replace('#', '');
+  }
+  async function render() {
+    const [panels, manifest] = await Promise.all([loadJson('film-room/panels.json'), loadJson('film-room/manifest.json')]);
+    const grid = document.getElementById('grid');
+    const list = panels || [];
+    if (!manifest || !manifest.length) document.getElementById('emptyNote').style.display = 'block';
+    const bySlug = Object.fromEntries((manifest || []).map(m => [m.slug, m]));
+    const wanted = targetSlug();
+
+    grid.innerHTML = list.map(p => {
+      const rec = bySlug[p.slug];
+      const body = rec
+        ? `<video controls preload="none" src="${escapeHtml(rec.file)}"></video>`
+        : `<div class="card__thumb">NOT RECORDED YET</div>`;
+      return `
+        <div class="card" id="panel-${escapeHtml(p.slug)}">
+          ${body}
+          <div class="card__body">
+            <div class="card__dwg">${escapeHtml(p.dwg)}</div>
+            <div class="card__title">${escapeHtml(p.title)}</div>
+            <div class="card__status ${rec ? 'card__status--ready' : ''}">${rec ? (rec.narrated ? '▶ Narrated walkthrough ready' : '▶ Silent walkthrough ready') : 'Coming soon'}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (wanted) {
+      const el = document.getElementById('panel-' + wanted);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  render();
+  window.addEventListener('hashchange', render);
+</script>
+</body>
+</html>

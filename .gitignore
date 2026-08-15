@@ -1,2 +1,4 @@
 node_modules/
 .vercel
+film-room/.tmp-*
+film-room/*.mp4

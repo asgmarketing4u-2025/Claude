@@ -155,7 +155,7 @@ function renderGhlPanel() {
   return `
     <section class="panel">
       <div class="panel__dwg">DWG A-08</div>
-      <h2 class="panel__title">Two-way sync with GoHighLevel — one pipeline, not two.</h2>
+      <h2 class="panel__title">Stop updating two pipelines by hand — connect once and they stay in sync.</h2>
       <p class="panel__pitch">CONNECT finds your pipeline and maps its stages to this board. PULL brings the CRM's changes here (CRM wins). PUSH sends this board's stage moves back — new records ask you first.</p>
 
       ${ghl.configured === false ? toolBannerHTML('ghl') : ''}

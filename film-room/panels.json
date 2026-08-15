@@ -1,0 +1,22 @@
+[
+  { "slug": "pipeline", "title": "Pipeline", "dwg": "DWG A-01" },
+  { "slug": "deal-analyzer", "title": "Deal Analyzer", "dwg": "DWG A-02" },
+  { "slug": "portfolio", "title": "Portfolio & Rentals", "dwg": "DWG A-03" },
+  { "slug": "financing", "title": "Financing", "dwg": "DWG A-04" },
+  { "slug": "renovation", "title": "Renovation", "dwg": "DWG A-05" },
+  { "slug": "deadlines-offers", "title": "Deadlines & Offers", "dwg": "DWG A-06" },
+  { "slug": "skip-trace", "title": "Skip Trace", "dwg": "DWG A-07" },
+  { "slug": "ghl-link", "title": "GHL Link", "dwg": "DWG A-08" },
+  { "slug": "city-radar", "title": "City Radar", "dwg": "DWG A-09" },
+  { "slug": "court-radar", "title": "Court Radar", "dwg": "DWG A-10" },
+  { "slug": "lead-pipeline", "title": "Lead Pipeline", "dwg": "DWG B-01" },
+  { "slug": "listings-showings", "title": "Listings & Showings", "dwg": "DWG B-02" },
+  { "slug": "contracts", "title": "Contracts", "dwg": "DWG B-03" },
+  { "slug": "commissions", "title": "Commissions", "dwg": "DWG B-04" },
+  { "slug": "followups-marketing", "title": "Follow-ups & Marketing", "dwg": "DWG B-05" },
+  { "slug": "referrals", "title": "Referrals", "dwg": "DWG B-06" },
+  { "slug": "daily-briefing", "title": "Daily Briefing", "dwg": "DWG C-01" },
+  { "slug": "weekly-report", "title": "Weekly Report", "dwg": "DWG C-02" },
+  { "slug": "data-intake", "title": "Data Intake", "dwg": "DWG C-03" },
+  { "slug": "vault-sharing", "title": "Vault & Sharing", "dwg": "DWG C-04" }
+]

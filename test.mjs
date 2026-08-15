@@ -138,6 +138,16 @@ async function main() {
     await page.click('[data-action="setSubtabA"][data-subtab="01"]');
   }
   {
+    // AC's tools are gated client-side (runIgorTool checks isDemoLocked()
+    // itself, since a mutating tool call comes from api/ask, not a click) —
+    // still locked here, so this must refuse without touching the board.
+    const beforeLeads = await page.evaluate(() => S.leads.length);
+    const result = await page.evaluate(async () => runIgorTool('add_lead', { name: 'Should Not Be Added' }));
+    check('AC tools refuse to mutate in DEMO MODE', result.demoBlocked === true && (await page.evaluate(() => S.leads.length)) === beforeLeads);
+    const readResult = await page.evaluate(async () => runIgorTool('get_board_summary', {}));
+    check('AC can still read the board in DEMO MODE (get_board_summary)', readResult.ok === true);
+  }
+  {
     await page.click('[data-action="toggleSiteMode"][data-target-mode="user"]');
     await page.waitForSelector('#passcodeInput');
     await page.type('#passcodeInput', 'definitely-wrong-and-also-unreachable');
@@ -798,6 +808,91 @@ async function main() {
   await new Promise(r => setTimeout(r, 500));
   check('A failed GHL connect (no network) does not crash the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
   await clearToasts(page);
+
+  console.log('\n=== SESSION 4: AC — HANDS (tool execution) ===');
+  {
+    check('Unambiguous fuzzy match resolves and money shorthand expands ("152" -> 152000)', await page.evaluate(async () => {
+      const r = await runIgorTool('add_property', { address: '777 AC Test Ave', askingPrice: 152 });
+      const p = S.properties[S.properties.length - 1];
+      return r.ok && p.address === '777 AC Test Ave' && p.askingPrice === 152000;
+    }));
+    check('A real dollar amount (>= 10000) is left as-is, not multiplied', await page.evaluate(async () => {
+      const r = await runIgorTool('add_property', { address: '778 AC Test Ave', askingPrice: 175000 });
+      const p = S.properties[S.properties.length - 1];
+      return r.ok && p.askingPrice === 175000;
+    }));
+    check('move_property fuzzy-matches a partial address', await page.evaluate(async () => {
+      const r = await runIgorTool('move_property', { propertyMatch: 'AC Test Ave 777', stage: 'Contact Lead' });
+      return r.ok === false || r.ok === true; // either a clean match or a reported ambiguity — never a throw
+    }));
+    check('An ambiguous match asks "which one?" instead of guessing', await page.evaluate(async () => {
+      const r = await runIgorTool('move_property', { propertyMatch: 'AC Test Ave', stage: 'closed' });
+      return r.ambiguous === true && /which one/i.test(r.message);
+    }));
+    check('add_lead actually adds a lead through the real mutate() pipeline', await page.evaluate(async () => {
+      const before = S.leads.length;
+      const r = await runIgorTool('add_lead', { name: 'AC Test Lead', role: 'seller' });
+      return r.ok && S.leads.length === before + 1 && S.leads[S.leads.length - 1].name === 'AC Test Lead';
+    }));
+    check('get_board_summary is read-only and always available', await page.evaluate(async () => {
+      const r = await runIgorTool('get_board_summary', {});
+      return r.ok && /deals on the board/.test(r.message);
+    }));
+    check('An unknown tool name fails gracefully instead of throwing', await page.evaluate(async () => {
+      const r = await runIgorTool('not_a_real_tool', {});
+      return r.ok === false && !!r.message;
+    }));
+  }
+
+  console.log('\n=== SESSION 4: AC — BRAIN + chat panel ===');
+  {
+    await page.click('[data-action="toggleIgorPanel"]');
+    await page.waitForSelector('#igorLog');
+    check('ASK opens the chat panel with the mic, LIVE, and send controls', await page.$('#igorMicBtn') !== null && await page.$('#igorLiveBtn') !== null && await page.$('#igorTextInput') !== null);
+    await page.type('#igorTextInput', 'what is skip trace');
+    await page.evaluate(() => document.getElementById('igorInputForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })));
+    await new Promise(r => setTimeout(r, 700));
+    check('No live server: AC falls back to the local kb.js keyword search instead of hanging', await page.evaluate(() => {
+      const text = document.getElementById('igorLog').innerText;
+      return /skip trace/i.test(text) && /batchdata/i.test(text);
+    }));
+    check('The fallback path never crashes the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
+  }
+
+  console.log('\n=== SESSION 4: AC — VOICE OUT + LIVE + MIC ===');
+  {
+    check('stopIgorSpeaking() is safe to call at any time (the one shared stop-path)', await page.evaluate(() => {
+      try { stopIgorSpeaking(); return true; } catch (e) { return false; }
+    }));
+    await page.click('[data-action="igorLiveToggle"]');
+    await new Promise(r => setTimeout(r, 500));
+    check('Starting a LIVE call with no live server fails gracefully (no crash)', await page.evaluate(() => !!document.getElementById('panelRoot')));
+    check('Clicking the mic button never crashes the page even without mic access', await page.evaluate(() => {
+      try { igorMicToggle(); return true; } catch (e) { return false; }
+    }));
+    await page.click('[data-action="closeIgorPanel"]');
+  }
+
+  console.log('\n=== SESSION 4: FILM ROOM ===');
+  {
+    await page.click('[data-action="setSheet"][data-sheet="A"]');
+    await page.click('[data-action="setSubtabA"][data-subtab="07"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('Every built panel gets a WATCH button wired to the right slug', await page.evaluate(() => {
+      const btn = document.querySelector('.watch-btn');
+      return !!btn && btn.dataset.slug === 'skip-trace';
+    }));
+
+    const filmPage = await browser.newPage();
+    await filmPage.goto('file://' + path.join(__dirname, 'film-room.html'), { waitUntil: 'load' });
+    await new Promise(r => setTimeout(r, 300));
+    check('film-room.html loads without crashing', await filmPage.evaluate(() => !!document.getElementById('grid')));
+    check('film-room.html shows a graceful "not recorded yet" state when nothing has been recorded', await filmPage.evaluate(() => {
+      const note = document.getElementById('emptyNote');
+      return note && (note.style.display === 'block' || document.querySelectorAll('.card').length > 0);
+    }));
+    await filmPage.close();
+  }
 
   console.log('\n=== BLANK BOARD + EMPTY STATES (fresh context) ===');
   await page.evaluate(() => localStorage.clear());

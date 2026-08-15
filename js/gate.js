@@ -19,6 +19,13 @@ const DEMO_ALLOWED_ACTIONS = new Set([
   // Session 3 — pure view/filter/navigation, same reasoning as the pipeline
   // filter above: no real board data changes, safe in DEMO MODE.
   'scrollToSection', 'cityRadarZipClick', 'cityRadarClearZip', 'cityRadarDotClick', 'cityRadarPermitSearch',
+  // AC (Session 4) — opening/closing chat, mic, and mute are UI toggles
+  // only. Asking a question is explicitly demo-safe by design (routed
+  // through a form submit, not a data-action, so the gate never even sees
+  // it) — but LIVE calls and every board-changing tool AC can run still
+  // check isDemoLocked() themselves before doing anything real.
+  'toggleIgorPanel', 'closeIgorPanel', 'igorMicToggle', 'igorLiveToggle', 'stopIgorSpeaking',
+  'openFilmRoom',
   'toggleTheme', 'toggleMasked',
   'openFinder', 'closeFinder', 'jumpToResult', 'jumpToUrgent',
   'pipelinePagerPrev', 'pipelinePagerNext', 'toggleMoveMenu',
@@ -37,7 +44,7 @@ const DEMO_ALLOWED_ACTIONS = new Set([
 
 // Inputs/selects the visitor may freely interact with in demo mode (pure
 // view/search state, nothing persisted to the real board).
-const DEMO_ALLOWED_INPUT_IDS = new Set(['finderInput', 'passcodeInput']);
+const DEMO_ALLOWED_INPUT_IDS = new Set(['finderInput', 'passcodeInput', 'igorTextInput']);
 
 function getSiteMode() {
   try { return localStorage.getItem(SITE_MODE_KEY) || 'demo'; } catch (e) { return 'demo'; }
