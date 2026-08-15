@@ -36,7 +36,14 @@ function buildInitialState() {
     referrals: buildSeedReferrals(),
     documents: buildSeedDocuments(),
     activity: [{ ts: Date.now(), msg: 'Board initialized with practice data.' }],
-    filters: { pipelineStrategy: 'all', leadPipeline: 'all' },
+    filters: { pipelineStrategy: 'all', leadPipeline: 'all', cityRadarQuery: '', cityRadarZip: '' },
+    // Session 3 — paid tools (Sheet A 07-10). Everything starts empty; each
+    // tool fills in as it's actually used, and stays a friendly "not
+    // configured" no-op if its API key was never added.
+    skipTraceResults: [],
+    courtRadar: { filings: [], seenIds: [], lastScanAt: null },
+    cityRadar: { notices: [], permits: [], seenNoticeIds: [], zipShapes: null, lastScanAt: null, lastScanSummary: null },
+    ghl: { connected: false, locationId: '', pipelineId: '', stageMap: {}, lastSyncAt: null },
   };
 }
 
@@ -73,6 +80,14 @@ function migrateState(state) {
   if (!Array.isArray(state.documents)) state.documents = buildSeedDocuments();
   if (state.meta.activeSubtabB === undefined) state.meta.activeSubtabB = '01';
   if (state.meta.activeSubtabC === undefined) state.meta.activeSubtabC = '01';
+  // Session 3 — paid tools. A board saved before Session 3 won't have these
+  // yet; seed them empty (nothing to migrate, they're purely additive).
+  if (!Array.isArray(state.skipTraceResults)) state.skipTraceResults = [];
+  if (!state.courtRadar) state.courtRadar = { filings: [], seenIds: [], lastScanAt: null };
+  if (!state.cityRadar) state.cityRadar = { notices: [], permits: [], seenNoticeIds: [], zipShapes: null, lastScanAt: null, lastScanSummary: null };
+  if (!state.ghl) state.ghl = { connected: false, locationId: '', pipelineId: '', stageMap: {}, lastSyncAt: null };
+  if (state.filters.cityRadarQuery === undefined) state.filters.cityRadarQuery = '';
+  if (state.filters.cityRadarZip === undefined) state.filters.cityRadarZip = '';
   state.properties.forEach(p => {
     if (!Array.isArray(p.activityLog)) p.activityLog = [];
     if (!Array.isArray(p.outreachLog)) p.outreachLog = [];
@@ -158,6 +173,10 @@ function blankState() {
   S.referrals = [];
   S.documents = [];
   S.filters = { pipelineStrategy: 'all', leadPipeline: 'all' };
+  S.skipTraceResults = [];
+  S.courtRadar = { filings: [], seenIds: [], lastScanAt: null };
+  S.cityRadar = { notices: [], permits: [], seenNoticeIds: [], zipShapes: null, lastScanAt: null, lastScanSummary: null };
+  S.ghl = { connected: false, locationId: '', pipelineId: '', stageMap: {}, lastSyncAt: null };
   S.meta.welcomeSeen = true;
   mutate('Started a fresh, empty board.', { undoSnapshot: snap, tone: 'warn', duration: 10000 });
 }
@@ -177,6 +196,10 @@ function resetToSampleData() {
   S.referrals = fresh.referrals;
   S.documents = fresh.documents;
   S.filters = fresh.filters;
+  S.skipTraceResults = fresh.skipTraceResults;
+  S.courtRadar = fresh.courtRadar;
+  S.cityRadar = fresh.cityRadar;
+  S.ghl = fresh.ghl;
   mutate('Reset the whole board to sample data.', { undoSnapshot: snap, tone: 'warn', duration: 10000 });
 }
 

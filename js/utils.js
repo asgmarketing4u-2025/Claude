@@ -85,6 +85,10 @@ function relTime(ts) {
   return days + 'd ago';
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function debounce(fn, ms) {
   let t;
   return function (...args) {

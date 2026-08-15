@@ -127,6 +127,17 @@ async function main() {
     await page.click('[data-action="setSheet"][data-sheet="A"]');
   }
   {
+    // Session 3 paid tools are real board mutations too, so they must stay
+    // gated the same as every Session 1/2 mutating action.
+    await page.click('[data-action="setSubtabA"][data-subtab="09"]');
+    await new Promise(r => setTimeout(r, 100));
+    await page.click('[data-action="scanTheCity"]');
+    await new Promise(r => setTimeout(r, 100));
+    check('Session 3 tools (scanTheCity) are blocked in DEMO MODE too', await page.$('#passcodeInput') !== null);
+    await page.click('.modal__foot [data-action="cancelPasscode"]');
+    await page.click('[data-action="setSubtabA"][data-subtab="01"]');
+  }
+  {
     await page.click('[data-action="toggleSiteMode"][data-target-mode="user"]');
     await page.waitForSelector('#passcodeInput');
     await page.type('#passcodeInput', 'definitely-wrong-and-also-unreachable');
@@ -185,8 +196,10 @@ async function main() {
   check('Sheet C lands on the Daily Briefing', await page.$('.briefing-grid') !== null);
   await page.click('[data-action="setSheet"][data-sheet="A"]');
   check('Sheet A returns to the Pipeline board', await page.$('.kanban-board') !== null);
+  // All 10 Investor tabs are built as of Session 3 (07-10 were the last
+  // "coming next" placeholders) — confirm 07 now shows the real panel.
   await page.click('[data-action="setSubtabA"][data-subtab="07"]');
-  check('Investor subtab 07 (unbuilt) shows coming-next placeholder', await page.$('.panel--soon') !== null);
+  check('Investor subtab 07 is now the real Skip Trace panel, not a placeholder', await page.$('.panel--soon') === null && await page.$('#stAddress') !== null);
   await page.click('[data-action="setSubtabA"][data-subtab="01"]');
 
   console.log('\n=== 01 PIPELINE ===');
@@ -578,7 +591,8 @@ async function main() {
   console.log('\n=== SHEET C: 01 DAILY BRIEFING ===');
   await page.click('[data-action="setSheet"][data-sheet="C"]');
   await page.waitForSelector('.briefing-grid');
-  check('Daily briefing shows all 4 sections', (await page.$$('.briefing-section')).length === 4);
+  // Session 3 added a 5th section (CITY RADAR) to the original 4.
+  check('Daily briefing shows all 5 sections', (await page.$$('.briefing-section')).length === 5);
   check('Briefing lines are ranked P1/P2/P3', await page.evaluate(() => {
     const lines = Array.from(document.querySelectorAll('.briefing-line__pri'));
     return lines.length === 0 || lines.every(el => ['P1', 'P2', 'P3'].includes(el.textContent));
@@ -701,6 +715,90 @@ async function main() {
     check('DISCONNECT clears the stored Lab Key hash', !(await page.evaluate(() => localStorage.getItem('ntmLabBoardId'))));
   }
 
+  console.log('\n=== SESSION 3: FIX-IT LEDGER (error dictionary) ===');
+  {
+    const covered = await page.evaluate(() => {
+      // Every tool/kind combo must resolve to a real row — never fall through
+      // to nothing — and never leak a raw code as the title.
+      let ok = true;
+      Object.keys(TOOL_INFO).forEach(tool => {
+        ALL_KINDS.forEach(kind => {
+          const row = errorRow(tool, kind);
+          if (!row || !row.title || !row.meaning || !row.action) ok = false;
+        });
+      });
+      return ok;
+    });
+    check('Every tool + failure-kind combo resolves to a full {title, meaning, action} row', covered);
+
+    check('A rejected fetch (offline) classifies to the offline kind', await page.evaluate(() => {
+      const netErr = new TypeError('Failed to fetch');
+      return classifyError(netErr) === 'offline';
+    }));
+    check('A 401/403-shaped error classifies to keyRejected', await page.evaluate(() =>
+      classifyError({ status: 401 }) === 'keyRejected' && classifyError({ status: 403 }) === 'keyRejected'
+    ));
+    check('A 402-shaped error classifies to outOfCredit', await page.evaluate(() => classifyError({ status: 402 }) === 'outOfCredit'));
+    check('A 429-shaped error classifies to rateLimited', await page.evaluate(() => classifyError({ status: 429 }) === 'rateLimited'));
+    check('A 5xx-shaped error classifies to serviceDown', await page.evaluate(() => classifyError({ status: 502 }) === 'serviceDown'));
+    check('{ notConfigured: true } classifies to notConfigured', await page.evaluate(() => classifyError({ notConfigured: true }) === 'notConfigured'));
+    check('friendlyError() never shows a raw HTTP code in the title', await page.evaluate(() => {
+      const row = friendlyError('skiptrace', { status: 401 });
+      return !/\b\d{3}\b/.test(row.title);
+    }));
+  }
+
+  console.log('\n=== SESSION 3: 07 SKIP TRACE ===');
+  await page.click('[data-action="setSheet"][data-sheet="A"]');
+  await page.click('[data-action="setSubtabA"][data-subtab="07"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Skip Trace panel renders the single-address form and results table', await page.$('#stAddress') !== null && await page.$('.data-table') !== null);
+  {
+    // No live server in this test run, so BatchData is unreachable — the
+    // panel must fail gracefully (friendly toast, no crash), never leave a
+    // button stuck or throw. This mirrors the Lab Link OFFLINE pattern above.
+    await page.type('#stAddress', '123 Test St');
+    await page.click('[data-action="runSkipTraceSingle"]');
+    await new Promise(r => setTimeout(r, 400));
+    check('A failed skip trace (no live server) does not crash the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
+    check('A failed skip trace logs an error/no-match row instead of hanging', await page.evaluate(() => {
+      const r = S.skipTraceResults[0];
+      return !!r && (r.status === 'error' || r.status === 'noMatch');
+    }));
+  }
+  check('EXPORT CSV is disabled until there is at least one result', await page.$eval('[data-action="exportSkipTraceCsv"]', el => !el.disabled));
+  check('RUN BATCH starts disabled until a CSV file is chosen', await page.$eval('#stBatchBtn', el => el.disabled));
+
+  console.log('\n=== SESSION 3: 09 CITY RADAR ===');
+  await page.click('[data-action="setSubtabA"][data-subtab="09"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('City Radar panel renders with jump chips', (await page.$$('.jump-chips .chip')).length === 4);
+  await page.click('[data-action="scrollToSection"][data-target="cityRadarMapSection"]');
+  {
+    await page.click('[data-action="scanTheCity"]');
+    await new Promise(r => setTimeout(r, 500));
+    check('A failed city scan (no network in this sandbox) does not crash the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
+    check('A failed city scan leaves the map panel showing its empty state, not broken markup', await page.evaluate(() => document.querySelector('.radar-map-wrap') !== null));
+  }
+
+  console.log('\n=== SESSION 3: 10 COURT RADAR ===');
+  await page.click('[data-action="setSubtabA"][data-subtab="10"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('Court Radar panel renders the CHECK THE COURT button', await page.$('[data-action="checkTheCourt"]') !== null);
+  await page.click('[data-action="checkTheCourt"]');
+  await new Promise(r => setTimeout(r, 500));
+  check('A failed court scan (no network) does not crash the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
+
+  console.log('\n=== SESSION 3: 08 GHL LINK ===');
+  await page.click('[data-action="setSubtabA"][data-subtab="08"]');
+  await new Promise(r => setTimeout(r, 100));
+  check('GHL Link panel renders CONNECT / PULL / PUSH', await page.$('[data-action="ghlConnect"]') !== null && await page.$('[data-action="ghlPull"]') !== null && await page.$('[data-action="ghlPush"]') !== null);
+  check('PULL and PUSH start disabled before connecting', await page.$eval('[data-action="ghlPull"]', el => el.disabled) && await page.$eval('[data-action="ghlPush"]', el => el.disabled));
+  await page.click('[data-action="ghlConnect"]');
+  await new Promise(r => setTimeout(r, 500));
+  check('A failed GHL connect (no network) does not crash the page', await page.evaluate(() => !!document.getElementById('panelRoot')));
+  await clearToasts(page);
+
   console.log('\n=== BLANK BOARD + EMPTY STATES (fresh context) ===');
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'load' });
@@ -767,6 +865,21 @@ async function main() {
   });
   const idxAfterVScroll = await page.evaluate(() => S.meta.mobileStageIndex || 0);
   check('A mostly-vertical touch (normal scroll) does not trigger a page change', idxAfterVScroll === idxBeforeVScroll);
+
+  console.log('\n=== SESSION 3: FIX-IT LEDGER PAGE (troubleshooting.html) ===');
+  {
+    const ledgerPage = await browser.newPage();
+    await ledgerPage.goto('file://' + path.join(__dirname, 'troubleshooting.html'), { waitUntil: 'load' });
+    await ledgerPage.waitForSelector('.tool-group');
+    check('troubleshooting.html renders a group per tool', (await ledgerPage.$$('.tool-group')).length === Object.keys(await ledgerPage.evaluate(() => TOOL_INFO)).length);
+    check('troubleshooting.html links back to the app', await ledgerPage.$eval('header a', el => el.getAttribute('href') === 'index.html'));
+    check('Every row shows a title, meaning, and a concrete next step', await ledgerPage.evaluate(() => {
+      const rows = document.querySelectorAll('.row');
+      if (!rows.length) return false;
+      return Array.from(rows).every(r => r.querySelector('.row__title').textContent.trim() && r.querySelector('.row__meaning').textContent.trim() && r.querySelector('.row__action').textContent.trim());
+    }));
+    await ledgerPage.close();
+  }
 
   console.log('\n=== NO CRASHES ===');
   check('No uncaught JS errors were thrown during the entire run', consoleErrors.length === 0);

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NTM Deal Center — Fix-It Ledger</title>
+<meta name="description" content="Plain-English explanations for every error the NTM Deal Center's paid tools can show — what you'll see, what it means, and exactly what to do.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A1A2F'/%3E%3Cpath d='M20 75 L20 30 L50 15 L80 30 L80 75 Z' fill='none' stroke='%23FF6B2C' stroke-width='6'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0A1A2F; --ink-dim: #4A6178; --muted: #7C93A6; --line: #D7E2E9;
+    --paper: #F5F8FA; --card: #FFFFFF; --orange: #D9541A; --danger: #B3261E; --ok: #1F7A4D;
+    --font-display: 'Big Shoulders Display', sans-serif; --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); line-height: 1.5; }
+  header { background: var(--ink); color: #fff; padding: 32px 24px; }
+  header a { color: var(--orange); text-decoration: none; font-family: var(--font-mono); font-size: 0.85rem; }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 2rem; margin: 8px 0 4px; }
+  header p { color: #B9C6D4; max-width: 640px; margin: 0; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 24px 80px; }
+  .tool-group { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 24px; overflow: hidden; }
+  .tool-group__head { background: #EEF3F6; padding: 14px 20px; font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.85rem; color: var(--ink-dim); }
+  .row { padding: 18px 20px; border-top: 1px solid var(--line); }
+  .row__title { font-weight: 700; font-size: 1.02rem; margin-bottom: 4px; }
+  .row__meaning { color: var(--ink-dim); margin: 0 0 6px; }
+  .row__action { font-family: var(--font-mono); font-size: 0.85rem; background: #FFF4EC; border-left: 3px solid var(--orange); padding: 8px 12px; margin: 0; }
+  .kind-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  footer { text-align: center; padding: 24px; color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">&larr; BACK TO NTM DEAL CENTER</a>
+  <h1>Fix-It Ledger</h1>
+  <p>Every error the paid tools (Skip Trace, Court Radar, Find Socials, GHL Link) can show — grouped by tool, in plain English. The app shows you the exact same wording as this page; nothing here is guesswork after the fact.</p>
+</header>
+<main id="ledgerRoot">Loading…</main>
+<footer>NTM DEAL CENTER — powered by ASG Marketing</footer>
+
+<script src="js/errors.js"></script>
+<script>
+  function escapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function render() {
+    const root = document.getElementById('ledgerRoot');
+    const ledger = buildFixItLedger();
+    root.innerHTML = ledger.map(group => `
+      <section class="tool-group">
+        <div class="tool-group__head">${escapeHtml(group.label)}</div>
+        ${group.rows.map(row => `
+          <div class="row">
+            <div class="kind-tag">${escapeHtml(row.kind)}</div>
+            <div class="row__title">${escapeHtml(row.title)}</div>
+            <p class="row__meaning">${escapeHtml(row.meaning)}</p>
+            <p class="row__action">${escapeHtml(row.action)}</p>
+          </div>`).join('')}
+      </section>`).join('');
+  }
+  render();
+</script>
+</body>
+</html>

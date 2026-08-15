@@ -34,7 +34,12 @@ function buildDailyBriefingData() {
     });
   });
 
-  return { criticalPath, touchToday, onCalendar, watchList };
+  const cityRadarSummary = S.cityRadar && S.cityRadar.lastScanSummary;
+  const cityRadar = cityRadarSummary
+    ? [{ priority: cityRadarSummary.newVacants > 0 ? 'P2' : 'P3', text: `${cityRadarSummary.newVacants} new vacant notice(s) since last scan (${cityRadarSummary.totalVacants} total, ${cityRadarSummary.permitCount} permits over $20k).` }]
+    : [];
+
+  return { criticalPath, touchToday, onCalendar, watchList, cityRadar };
 }
 
 function briefingSectionHTML(title, items, emptyMsg) {
@@ -55,6 +60,7 @@ function renderDailyBriefingPanel() {
         ${briefingSectionHTML('PEOPLE TO TOUCH TODAY', d.touchToday, "Nobody's due for a touch today.")}
         ${briefingSectionHTML('ON THE CALENDAR', d.onCalendar, 'No showings on the books today.')}
         ${briefingSectionHTML('WATCH LIST — GOING COLD', d.watchList, 'No one has gone quiet.')}
+        ${briefingSectionHTML('CITY RADAR', d.cityRadar, 'No scan yet — run SCAN THE CITY on Sheet A tab 09.')}
       </div>
     </section>`;
 }
@@ -72,6 +78,7 @@ function buildBriefingText() {
   section('PEOPLE TO TOUCH TODAY', d.touchToday, 'None.');
   section('ON THE CALENDAR', d.onCalendar, 'None.');
   section('WATCH LIST', d.watchList, 'None.');
+  section('CITY RADAR', d.cityRadar, 'No scan yet.');
   return lines.join('\n');
 }
 

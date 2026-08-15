@@ -16,6 +16,9 @@ const DEMO_ALLOWED_ACTIONS = new Set([
   'collapseHero', 'expandHero',
   'setSheet', 'setSubtabA', 'setSubtabB', 'setSubtabC',
   'setPipelineFilter', 'setLeadFilter',
+  // Session 3 — pure view/filter/navigation, same reasoning as the pipeline
+  // filter above: no real board data changes, safe in DEMO MODE.
+  'scrollToSection', 'cityRadarZipClick', 'cityRadarClearZip', 'cityRadarDotClick', 'cityRadarPermitSearch',
   'toggleTheme', 'toggleMasked',
   'openFinder', 'closeFinder', 'jumpToResult', 'jumpToUrgent',
   'pipelinePagerPrev', 'pipelinePagerNext', 'toggleMoveMenu',

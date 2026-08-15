@@ -495,6 +495,61 @@ kbd { font-family: var(--font-mono); font-size: 0.62rem; background: var(--bg); 
 .intake-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 .intake-grid input[type="file"] { display: block; margin: 10px 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-dim); }
 
+/* ============================================================
+   Session 3 — paid tools (Skip Trace, GHL Link, City Radar, Court Radar)
+   ============================================================ */
+
+.footer-block__link { color: var(--muted); text-decoration: none; font-family: var(--font-mono); }
+.footer-block__link:hover { color: var(--orange); }
+
+.tool-banner { border: 1px solid var(--orange); border-left-width: 4px; background: rgba(255, 107, 44, 0.08); border-radius: 6px; padding: 12px 16px; margin-bottom: 18px; }
+.tool-banner__title { font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+.tool-banner p { margin: 0; color: var(--ink-dim); font-size: 0.85rem; line-height: 1.5; }
+
+.tool-form-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.tool-form-row .field { min-width: 140px; }
+.tool-form-row--batch input[type="file"] { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-dim); }
+.tool-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+
+.panel__row-between { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
+.table-scroll { overflow-x: auto; }
+.data-table__empty { color: var(--muted); font-style: italic; white-space: normal; }
+
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line-strong); text-transform: uppercase; }
+.tag--ok { color: var(--mint); border-color: var(--mint); }
+.tag--muted { color: var(--muted); }
+.tag--danger { color: var(--danger); border-color: var(--danger); }
+.tag--new { color: var(--orange); border-color: var(--orange); background: rgba(255, 107, 44, 0.12); margin-left: 6px; }
+tr.row--new { background: rgba(255, 107, 44, 0.06); }
+
+.tool-row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.jump-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+
+.radar-map-wrap { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 18px; }
+.radar-map { width: 100%; height: auto; display: block; }
+.radar-zip { cursor: pointer; transition: stroke-width 0.15s; }
+.radar-zip--active { stroke: var(--orange) !important; }
+.radar-dot { cursor: pointer; }
+.radar-dot--notice { fill: var(--danger); stroke: #fff; stroke-width: 0.5; }
+.radar-dot--permit { fill: var(--cyan); opacity: 0.7; }
+.radar-dot--new { animation: pulseMilestone 1.2s infinite; }
+@media (prefers-reduced-motion: reduce) { .radar-dot--new { animation: none; } }
+.radar-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); align-items: center; }
+.radar-legend__dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.radar-legend__dot--notice { background: var(--danger); }
+.radar-legend__dot--permit { background: var(--cyan); }
+.radar-legend__swatch { display: inline-block; width: 14px; height: 8px; background: var(--orange); opacity: 0.4; margin-right: 4px; }
+
+.permit-search-list { list-style: none; padding: 0; margin: 8px 0 0; font-family: var(--font-mono); font-size: 0.8rem; }
+.permit-search-list li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+
+.social-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.social-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; text-decoration: none; color: var(--ink); font-family: var(--font-mono); font-size: 0.8rem; }
+.social-chip:hover { border-color: var(--orange); color: var(--orange); }
+.confidence-tag { font-size: 0.6rem; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--muted); }
+.confidence-tag--confident { color: var(--mint); border-color: var(--mint); }
+
 /* ---------- responsive tweaks ---------- */
 @media (max-width: 720px) {
   .title-block { padding: 10px 14px; }

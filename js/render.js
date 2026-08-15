@@ -10,10 +10,10 @@ const SUBTABS_A = [
   { key: '04', label: 'FINANCING', builtin: true },
   { key: '05', label: 'RENOVATION', builtin: true },
   { key: '06', label: 'DEADLINES & OFFERS', builtin: true },
-  { key: '07', label: 'BUYERS LIST', builtin: false },
-  { key: '08', label: 'COMPS', builtin: false },
-  { key: '09', label: 'DOCUMENTS', builtin: false },
-  { key: '10', label: 'REPORTS', builtin: false },
+  { key: '07', label: 'SKIP TRACE', builtin: true },
+  { key: '08', label: 'GHL LINK', builtin: true },
+  { key: '09', label: 'CITY RADAR', builtin: true },
+  { key: '10', label: 'COURT RADAR', builtin: true },
 ];
 
 const SUBTABS_B = [
@@ -190,6 +190,15 @@ function renderPanel() {
       case '04': root.innerHTML = renderFinancingPanel(); break;
       case '05': root.innerHTML = renderRenovationPanel(); break;
       case '06': root.innerHTML = renderDeadlinesPanel(); break;
+      // Session 3: defined in render-tools.js / cityradar.js, which load
+      // after this file but before main.js's boot() call — render() only
+      // ever runs from boot(), once every script has already executed and
+      // defined its top-level functions, so calling these here is safe
+      // regardless of load order (same pattern already used for Sheet B/C).
+      case '07': root.innerHTML = renderSkipTracePanel(); afterRenderSkipTrace(); break;
+      case '08': root.innerHTML = renderGhlPanel(); break;
+      case '09': root.innerHTML = renderCityRadarPanel(); afterRenderCityRadar(); break;
+      case '10': root.innerHTML = renderCourtRadarPanel(); break;
       default: root.innerHTML = comingNextPanelHTML('DWG A-' + key, 'Coming next.');
     }
   } else if (sheet === 'B') {
