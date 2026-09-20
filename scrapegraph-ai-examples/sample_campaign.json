@@ -1,0 +1,116 @@
+{
+  "name": "Tech Startup Lead Generation Campaign",
+  "description": "Q4 2026 lead generation targeting tech startups",
+  "start_date": "2026-09-20",
+  "target_industries": ["Technology", "SaaS", "AI", "Fintech"],
+  "target_countries": ["USA", "Canada", "UK", "EU"],
+  "sources": [
+    {
+      "name": "Crunchbase Tech Companies",
+      "type": "directory",
+      "urls": [
+        "https://crunchbase.com/companies?filter_query=technology&stage=seed,series-a",
+        "https://crunchbase.com/companies?filter_query=ai-software&stage=series-b"
+      ],
+      "prompt": "Extract all technology startup company information:\n- Company name\n- Founded year\n- Headquarters location\n- CEO/Founder names\n- Website\n- Contact email\n- Number of employees\n- Funding stage\n- Latest funding amount\n- Industry tags",
+      "delay": 4,
+      "priority": "high"
+    },
+    {
+      "name": "LinkedIn Companies (AI/SaaS)",
+      "type": "social",
+      "urls": [
+        "https://linkedin.com/search/results/companies/?keywords=Artificial%20Intelligence&page=1",
+        "https://linkedin.com/search/results/companies/?keywords=Software%20as%20a%20Service&page=1",
+        "https://linkedin.com/search/results/companies/?keywords=Machine%20Learning%20Platform&page=1"
+      ],
+      "prompt": "Extract company information from LinkedIn:\n- Company name\n- LinkedIn company URL\n- Company size (employees)\n- Founded year\n- Headquarters\n- Website\n- Company description\n- Industry\n- CEO name",
+      "delay": 5,
+      "priority": "high"
+    },
+    {
+      "name": "AngelList Startups",
+      "type": "directory",
+      "urls": [
+        "https://wellfound.com/discover/startups?focused_on=Artificial%20Intelligence",
+        "https://wellfound.com/discover/startups?focused_on=SaaS"
+      ],
+      "prompt": "Extract startup information:\n- Startup name\n- Tagline/Description\n- Website\n- Location\n- Founders (names)\n- Funding stage\n- Team size\n- Contact email",
+      "delay": 3,
+      "priority": "medium"
+    },
+    {
+      "name": "YCombinator Companies",
+      "type": "accelerator",
+      "urls": [
+        "https://www.ycombinator.com/companies",
+        "https://www.ycombinator.com/startups"
+      ],
+      "prompt": "Extract Y Combinator startup information:\n- Company name\n- Batch (cohort)\n- Tagline\n- Website\n- Location\n- Founder names\n- Industry focus\n- Hiring information",
+      "delay": 4,
+      "priority": "high"
+    },
+    {
+      "name": "GitHub Trending",
+      "type": "tech_projects",
+      "urls": [
+        "https://github.com/trending?since=weekly&spoken_language_code=en"
+      ],
+      "prompt": "Extract trending project information:\n- Project name\n- Description\n- Repository URL\n- Creator/Organization\n- Language\n- Stars\n- Contact email (if available)\n- Related websites",
+      "delay": 2,
+      "priority": "low"
+    },
+    {
+      "name": "Product Hunt Launches",
+      "type": "product_directory",
+      "urls": [
+        "https://www.producthunt.com/products/newest",
+        "https://www.producthunt.com/products/trending"
+      ],
+      "prompt": "Extract product and company information:\n- Product name\n- Company/Maker name\n- Description\n- Website\n- Maker website/email\n- Product categories\n- Tagline\n- Upvotes",
+      "delay": 2,
+      "priority": "medium"
+    },
+    {
+      "name": "Business Directory",
+      "type": "general_directory",
+      "urls": [
+        "https://www.chamber.com/directory?industry=software",
+        "https://www.chamber.com/directory?industry=technology"
+      ],
+      "prompt": "Extract business directory listings:\n- Business name\n- Business type\n- Website\n- Phone\n- Email\n- Address\n- Business description\n- Owner/Manager name",
+      "delay": 2,
+      "priority": "low"
+    }
+  ],
+  "filters": {
+    "min_employees": 1,
+    "max_employees": 500,
+    "founded_after": 2015,
+    "funding_stage": ["seed", "series-a", "series-b"],
+    "exclude_keywords": ["defunct", "closed", "acquired"]
+  },
+  "processing": {
+    "deduplicate": true,
+    "remove_invalid_emails": true,
+    "validate_domains": true,
+    "merge_duplicates": true
+  },
+  "export": {
+    "formats": ["csv", "json"],
+    "output_directory": "./exports",
+    "include_timestamp": true,
+    "include_statistics": true
+  },
+  "notifications": {
+    "email_on_completion": false,
+    "email_on_error": false,
+    "log_file": "./campaign.log"
+  },
+  "performance": {
+    "max_concurrent": 1,
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "proxy_rotation": false
+  }
+}
