@@ -1,0 +1,51 @@
+# Source listing URLs for the Maryland real-estate-investor scrape.
+# One URL per line. Blank lines and lines starting with '#' are ignored.
+# A trailing "  # note" (two spaces + #) is stripped.
+#
+# PAGE RANGES: put ONE {start-end} template in a line to auto-expand pages, e.g.
+#   https://example.com/search?q=real+estate+investor+maryland&page={1-10}
+# expands to page=1 .. page=10.
+#
+# CURATE THIS LIST before a real run. Scrape only where a site's Terms of
+# Service and robots.txt permit it, throttle politely, and prefer sources that
+# publish this data for public use (association member directories, chambers of
+# commerce, "we buy houses" company sites). The script honors robots.txt by
+# default (use --ignore-robots to override, which you generally should not).
+#
+# ToS WARNING: the big consumer directories below (YellowPages, Yelp, BBB,
+# Manta, Google) broadly PROHIBIT automated scraping and actively block bots.
+# They are listed only so you can decide deliberately; expect CAPTCHAs/blocks
+# and review each site's terms. Many are commented out on purpose.
+
+# ---------------------------------------------------------------------------
+# 1) Real-estate investor associations (REIA) — member/sponsor directories
+#    These publicly list member businesses and are usually the best source.
+# ---------------------------------------------------------------------------
+# https://baltimorereia.com/              # add the specific member-directory page
+# https://www.mlandlordassociation.org/   # verify ToS before scraping
+
+# ---------------------------------------------------------------------------
+# 2) "We buy houses" / cash-buyer company sites (one business per page)
+#    Good for enrichment; add specific company homepages or /contact pages.
+# ---------------------------------------------------------------------------
+# https://somecompany.com/contact
+
+# ---------------------------------------------------------------------------
+# 3) Chamber of commerce member directories (often public & scrape-tolerant)
+#    Filter to the real-estate / investment category, then paste listing pages.
+# ---------------------------------------------------------------------------
+# https://business.<chamber>.org/list/searchalpha/real-estate?page={1-10}
+
+# ---------------------------------------------------------------------------
+# 4) Maryland state data (public records — read terms; bulk/API may be offered)
+#    MD SDAT business entity search is a legitimate way to find RE-investment
+#    LLCs, though it needs its own query flow rather than a plain page scrape.
+# ---------------------------------------------------------------------------
+# https://egov.maryland.gov/BusinessExpress/EntitySearch
+
+# ---------------------------------------------------------------------------
+# 5) Large consumer directories — ToS-RESTRICTED, bot-blocked. Enable only
+#    after you have reviewed each site's terms and accept the risk.
+# ---------------------------------------------------------------------------
+# https://www.yellowpages.com/search?search_terms=real+estate+investors&geo_location_terms=Maryland&page={1-30}
+# https://www.manta.com/mb_35_C0252BT1_23/real_estate_investment/maryland
