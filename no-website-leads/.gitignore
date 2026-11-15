@@ -1,0 +1,7 @@
+# Local run artifacts — never commit secrets or scraped data
+.env
+venv/
+*.csv
+*.csv.processed
+__pycache__/
+*.pyc

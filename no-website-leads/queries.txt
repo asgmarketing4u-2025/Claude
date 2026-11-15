@@ -1,0 +1,45 @@
+# Google Places queries for the no-website finder.
+# Format:  category | location
+# One per line. '#' comments and blank lines ignored. The tool searches
+# "<category> in <location>" and keeps only businesses with no website.
+#
+# COVERAGE: Places text search returns up to ~60 results per query, so coverage
+# comes from many category x city combinations. Start narrow, confirm the output
+# looks right and watch billing, then expand. Add more cities/categories freely.
+#
+# Trades/service businesses are the best "no website" prospects for an agency.
+
+# ---- category seed list (duplicate these across your cities) ----------------
+# plumber, electrician, hvac, roofing contractor, landscaper, auto repair,
+# barber shop, nail salon, hair salon, restaurant, cleaning service, towing,
+# pest control, handyman, locksmith, catering, daycare, tax preparer
+
+# ================= Maryland / Baltimore =================
+plumber | Baltimore, MD
+hvac | Baltimore, MD
+roofing contractor | Baltimore, MD
+auto repair | Baltimore, MD
+landscaper | Towson, MD
+barber shop | Silver Spring, MD
+
+# ================= Washington, DC =================
+plumber | Washington, DC
+electrician | Washington, DC
+catering | Washington, DC
+
+# ================= Virginia =================
+hvac | Richmond, VA
+roofing contractor | Virginia Beach, VA
+auto repair | Norfolk, VA
+landscaper | Arlington, VA
+
+# ================= New Jersey =================
+plumber | Newark, NJ
+hvac | Jersey City, NJ
+auto repair | Trenton, NJ
+
+# ================= North Carolina =================
+roofing contractor | Charlotte, NC
+hvac | Raleigh, NC
+landscaper | Greensboro, NC
+auto repair | Durham, NC

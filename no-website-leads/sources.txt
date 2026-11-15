@@ -1,0 +1,15 @@
+# Directory listing URLs for the ScrapeGraphAI second pass (scrape_finder.py).
+# One URL per line. '#' comments and blank lines ignored.
+#
+# Point these at pages that list many local businesses in your target region
+# (Baltimore/MD, DC, VA, NJ, NC) -- chambers of commerce member directories,
+# local business associations, trade-group member lists. Curate these and
+# scrape only where the site's Terms of Service and robots.txt permit it.
+#
+# The scraper keeps only businesses with NO listed website. Remember a directory
+# may omit a URL even when the business has a site, so these are weaker leads
+# than the Google Places results -- verify before outreach.
+#
+# Examples (replace with the real member-directory pages you want to use):
+# https://business.<chamber>.org/list/searchalpha/...
+# https://www.<local-association>.org/members
