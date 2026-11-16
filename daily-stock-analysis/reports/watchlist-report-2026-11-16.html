@@ -1,0 +1,189 @@
+<title>Watchlist Report 16 Nov 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; warning first, three-stock scoreboard, then one section per stock with levels beside the reasoning. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#161b26; --muted:#5b6475; --line:#dde1e8;
+  --accent:#2f5fd0; --watch:#8a6100; --watch-bg:#fdf3d7; --sell:#b3401a; --sell-bg:#fde6dc;
+  --good:#1f7a4d; --warn-bg:#fff4d6; --warn-line:#e0b23c;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12151c; --surface:#1b202a; --fg:#e8ebf1; --muted:#9aa3b5; --line:#2e3542;
+  --accent:#8fb0ff; --watch:#f0c45a; --watch-bg:#3a2f10; --sell:#ff9a76; --sell-bg:#44200f;
+  --good:#6fd3a0; --warn-bg:#33290c; --warn-line:#8a6d1c; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#12151c; --surface:#1b202a; --fg:#e8ebf1; --muted:#9aa3b5; --line:#2e3542;
+  --accent:#8fb0ff; --watch:#f0c45a; --watch-bg:#3a2f10; --sell:#ff9a76; --sell-bg:#44200f;
+  --good:#6fd3a0; --warn-bg:#33290c; --warn-line:#8a6d1c; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--body)}
+.wrap{max-width:900px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.9rem} h2{font-size:1.45rem} h3{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--body);font-weight:600}
+p{margin:0} .muted{color:var(--muted)} .num{font-variant-numeric:tabular-nums}
+.notice{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;padding:14px 16px}
+.notice strong{display:block;margin-bottom:4px}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0;text-decoration:none;color:inherit}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tick{font-family:var(--display);font-weight:700;font-size:1.3rem}
+.pill{display:inline-block;font-size:.8rem;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.pill.watch{background:var(--watch-bg);color:var(--watch)} .pill.sell{background:var(--sell-bg);color:var(--sell)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price{font-size:1.25rem;font-weight:600} .down{color:var(--sell)}
+.meter{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--accent)}
+section.stock{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.decision{border-left:3px solid var(--accent);padding-left:12px;font-size:1.05rem}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.cols>div{min-width:0;display:flex;flex-direction:column;gap:8px}
+ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);white-space:nowrap}
+td.num{text-align:right;white-space:nowrap}
+footer{font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <h1>Watchlist report: AAPL, MSFT, NVDA</h1>
+    <p class="muted">16 November 2026, taken during US trading hours. Written by the Daily Stock Analysis app using Google Gemini (gemini-3.6-flash).</p>
+  </header>
+
+  <div class="notice">
+    <strong>This is not investment advice.</strong>
+    This report was generated automatically by an AI model from free market data. It can be wrong, out of date, or incomplete. Do not buy or sell based on it alone. Do your own research and speak to a licensed financial adviser before making decisions.
+  </div>
+
+  <div>
+    <h3 style="margin-bottom:10px">At a glance: 0 buy, 2 watch, 1 reduce</h3>
+    <div class="board">
+      <a class="tile" href="#aapl">
+        <div class="row"><span class="tick">AAPL</span><span class="pill watch">Watch</span></div>
+        <div class="row"><span class="price num">$351.43</span><span class="down num">−1.36%</span></div>
+        <div class="meter" role="img" aria-label="Score 59 out of 100"><span style="width:59%"></span></div>
+        <div class="row muted"><span>Score <b class="num">59</b>/100</span><span>Trend: bullish</span></div>
+      </a>
+      <a class="tile" href="#msft">
+        <div class="row"><span class="tick">MSFT</span><span class="pill watch">Watch</span></div>
+        <div class="row"><span class="price num">$517.69</span><span class="down num">−1.18%</span></div>
+        <div class="meter" role="img" aria-label="Score 52 out of 100"><span style="width:52%"></span></div>
+        <div class="row muted"><span>Score <b class="num">52</b>/100</span><span>Trend: bearish</span></div>
+      </a>
+      <a class="tile" href="#nvda">
+        <div class="row"><span class="tick">NVDA</span><span class="pill sell">Reduce</span></div>
+        <div class="row"><span class="price num">$155.43</span><span class="down num">−4.56%</span></div>
+        <div class="meter" role="img" aria-label="Score 32 out of 100"><span style="width:32%"></span></div>
+        <div class="row muted"><span>Score <b class="num">32</b>/100</span><span>Trend: strongly bearish</span></div>
+      </a>
+    </div>
+  </div>
+
+  <section class="stock" id="aapl">
+    <div class="row"><h2>Apple Inc. (AAPL)</h2><span class="pill watch">Watch · score 59</span></div>
+    <p class="decision">Hold and watch. The price trend looks healthy, but the app could not confirm it with money-flow data, so it downgraded its own "buy" call to watch-only.</p>
+    <div class="cols">
+      <div><h3>In its favour</h3><ul>
+        <li>Short, medium and longer moving averages are stacked upward (5-day 353.24, 10-day 348.35, 20-day 346.35).</li>
+        <li>Today's dip came on low trading volume, about half of yesterday's, which suggests little selling pressure.</li>
+        <li>Latest quarter: revenue $114.48B, net profit $30.71B.</li>
+      </ul></div>
+      <div><h3>Risks</h3><ul>
+        <li>Expensive relative to earnings: price-to-earnings ratio about 39.</li>
+        <li>The price quote came from a backup data source, and some indicators were only partly available.</li>
+      </ul></div>
+    </div>
+    <div class="cols">
+      <div><h3>Price levels the app suggests</h3><div class="scroll"><table>
+        <tr><th>Ideal entry</th><td class="num">351.40</td><td>near the 5-day average</td></tr>
+        <tr><th>Second entry</th><td class="num">348.35</td><td>10-day average support</td></tr>
+        <tr><th>Stop loss</th><td class="num">345.50</td><td>below the 20-day average</td></tr>
+        <tr><th>Target</th><td class="num">357.10</td><td>today's high</td></tr>
+      </table></div></div>
+      <div><h3>If you…</h3><div class="scroll"><table>
+        <tr><th>Don't own it</th><td>Don't chase. Wait for support to hold or a clear breakout.</td></tr>
+        <tr><th>Own it</th><td>Treat 348.35 as the risk line and keep the position modest.</td></tr>
+        <tr><th>Suggested size</th><td>4 out of 10</td></tr>
+      </table></div></div>
+    </div>
+    <div><h3 style="margin-bottom:8px">Company numbers (quarter ending 30 Sep 2026)</h3><div class="scroll"><table>
+      <tr><th>Revenue</th><th>Net profit</th><th>Operating cash flow</th><th>Revenue growth</th><th>Profit growth</th><th>Gross margin</th><th>Dividend yield</th></tr>
+      <tr><td class="num">$114.48B</td><td class="num">$30.71B</td><td class="num">$28.10B</td><td class="num">11.72%</td><td class="num">11.81%</td><td class="num">48.79%</td><td class="num">0.30%</td></tr>
+    </table></div></div>
+  </section>
+
+  <section class="stock" id="msft">
+    <div class="row"><h2>Microsoft Corporation (MSFT)</h2><span class="pill watch">Watch · score 52</span></div>
+    <p class="decision">Stay on the sidelines. The business is strong, but the share price has slipped below its 5-, 10- and 20-day averages with nothing yet pushing it back up.</p>
+    <div class="cols">
+      <div><h3>In its favour</h3><ul>
+        <li>Strong finances: return on equity 34.22%, quarterly net profit $36.63B.</li>
+        <li>The fall came on low volume (0.58× yesterday's).</li>
+        <li>Reasonable valuation: price-to-earnings ratio about 27.</li>
+      </ul></div>
+      <div><h3>Risks</h3><ul>
+        <li>Price is below all three short-term averages (5-day 523.77, 10-day 530.74, 20-day 528.59).</li>
+        <li>No positive news or momentum to drive a rebound.</li>
+        <li>No news feed was connected, so news was not checked.</li>
+      </ul></div>
+    </div>
+    <div class="cols">
+      <div><h3>Price levels the app suggests</h3><div class="scroll"><table>
+        <tr><th>Ideal entry</th><td class="num">516.90</td><td>only if support holds and reverses</td></tr>
+        <tr><th>Second entry</th><td class="num">524.00</td><td>back above the 5-day average on rising volume</td></tr>
+        <tr><th>Stop loss</th><td class="num">512.00</td><td>below the recent low</td></tr>
+        <tr><th>Target</th><td class="num">530.70</td><td>10-day average</td></tr>
+      </table></div></div>
+      <div><h3>If you…</h3><div class="scroll"><table>
+        <tr><th>Don't own it</th><td>Don't enter yet. Wait for the price to reclaim its averages.</td></tr>
+        <tr><th>Own it</th><td>Hold a light position; reduce if 516.90 fails.</td></tr>
+        <tr><th>Suggested size</th><td>0 to 2 out of 10</td></tr>
+      </table></div></div>
+    </div>
+    <div><h3 style="margin-bottom:8px">Company numbers (quarter ending 30 Sep 2026)</h3><div class="scroll"><table>
+      <tr><th>Revenue</th><th>Net profit</th><th>Operating cash flow</th><th>Revenue growth</th><th>Profit growth</th><th>Gross margin</th><th>Dividend yield</th></tr>
+      <tr><td class="num">$92.28B</td><td class="num">$36.63B</td><td class="num">$58.00B</td><td class="num">18.80%</td><td class="num">32.01%</td><td class="num">67.66%</td><td class="num">0.70%</td></tr>
+    </table></div></div>
+  </section>
+
+  <section class="stock" id="nvda">
+    <div class="row"><h2>NVIDIA Corporation (NVDA)</h2><span class="pill sell">Reduce · score 32</span></div>
+    <p class="decision">Reduce on any bounce. The price is in a clear downtrend, well below all its recent averages, even though the company's finances are strong and the stock looks oversold in the short term.</p>
+    <div class="cols">
+      <div><h3>In its favour</h3><ul>
+        <li>Oversold reading (RSI 20.5), which makes a short relief bounce more likely.</li>
+        <li>Strong finances: return on equity 117.2%, price-to-earnings ratio about 19.65.</li>
+      </ul></div>
+      <div><h3>Risks</h3><ul>
+        <li>Steep downtrend: 5-day average 165.42, 10-day 178.08, 20-day 195.61, price 155.43.</li>
+        <li>A drop below 155.00 could trigger faster selling.</li>
+        <li>No news feed was connected, so the reason for the fall was not checked.</li>
+      </ul></div>
+    </div>
+    <div class="cols">
+      <div><h3>Price levels the app suggests</h3><div class="scroll"><table>
+        <tr><th>Entry</th><td class="num">none</td><td>no buy signal until it steadies above 165.42</td></tr>
+        <tr><th>Stop loss</th><td class="num">154.50</td><td>below today's support at 155.00</td></tr>
+        <tr><th>Trim near</th><td class="num">165.42</td><td>5-day average</td></tr>
+      </table></div></div>
+      <div><h3>If you…</h3><div class="scroll"><table>
+        <tr><th>Don't own it</th><td>Stay out until there is a real reversal.</td></tr>
+        <tr><th>Own it</th><td>Use small rebounds toward 165.42 to cut the position.</td></tr>
+        <tr><th>Suggested size</th><td>1 out of 10</td></tr>
+      </table></div></div>
+    </div>
+    <div><h3 style="margin-bottom:8px">Company numbers (quarter ending 31 Jul 2026)</h3><div class="scroll"><table>
+      <tr><th>Revenue</th><th>Net profit</th><th>Operating cash flow</th><th>Revenue growth</th><th>Profit growth</th><th>Gross margin</th><th>Dividend yield</th></tr>
+      <tr><td class="num">$96.22B</td><td class="num">$59.69B</td><td class="num">$24.08B</td><td class="num">105.85%</td><td class="num">125.90%</td><td class="num">74.67%</td><td class="num">0.33%</td></tr>
+    </table></div></div>
+  </section>
+
+  <footer>
+    <p><b>What this run did not have.</b> No news search was connected, so headlines and events were not considered. Prices came from a backup source during market hours, so they were mid-day figures, not closing prices. Money-flow and shareholder-cost data are not available for US stocks in this app.</p>
+    <p><b>How to read the score.</b> 0 to 100, the app's own blend of price trend, company finances, news and market conditions. Higher is more favourable. It is an opinion, not a forecast.</p>
+    <p>Source file: reports/report_20261116.md, generated 16 Nov 2026 19:49 UTC. Not investment advice.</p>
+  </footer>
+</div>
