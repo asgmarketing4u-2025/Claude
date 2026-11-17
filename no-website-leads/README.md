@@ -66,6 +66,11 @@ python scrape_finder.py --selftest
 
 ## Run
 
+**Regenerate the query grid (optional).** `queries.txt` is produced by
+`gen_queries.py` — edit its `CATEGORIES` / `CITIES` lists and run
+`python gen_queries.py` to rebuild it. The shipped grid is 14 categories × 59
+cities = 826 queries across all six areas.
+
 **Primary — Google Places.** Edit `queries.txt` (category | city lines), then:
 
 ```bash
